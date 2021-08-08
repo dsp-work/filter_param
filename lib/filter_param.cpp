@@ -290,7 +290,7 @@ FilterType FilterParam::analyze_type(const string& input)
 	{
 		type = FilterType::LPF;
 	}
-	else if (true)	// hpf, bpf, bef バリエーション
+	else if (true) // hpf, bpf, bef バリエーション
 	{
 		fprintf(stderr,
 				"Error: [%s l.%d]It has not been implement yet.(input : \"%s\")\n",
@@ -364,7 +364,7 @@ vector<complex<double>> FilterParam::gen_csw
 
 	for (unsigned int i = 0; i < nsplit; ++i)
 	{
-		csw.emplace_back(polar(1.0, dpi * (left + step_size * (double) i)));
+		csw.emplace_back(polar(1.0, dpi * (left + step_size * (double)i)));
 	}
 
 	return csw;
@@ -394,7 +394,7 @@ vector<complex<double>> FilterParam::gen_csw2
 
 	for (unsigned int i = 0; i < nsplit; ++i)
 	{
-		csw2.emplace_back(polar(1.0, dpi * (left + step_size * (double) i)));
+		csw2.emplace_back(polar(1.0, dpi * (left + step_size * (double)i)));
 	}
 
 	return csw2;
@@ -438,12 +438,12 @@ vector<vector<complex<double>>> FilterParam::freq_res_se(const vector<double>& c
 	vector<vector<complex<double>>> res;
 		res.reserve(bands.size());
 
-	for (unsigned int i = 0; i < bands.size(); ++i)    // 周波数帯域のループ
+	for (unsigned int i = 0; i < bands.size(); ++i) // 周波数帯域のループ
 	{
 		vector<complex<double>> band_res;
-			band_res.reserve(csw.at(i).size());
+		band_res.reserve(csw.at(i).size());
 
-		for (unsigned int j = 0; j < csw.at(i).size(); ++j)  // 周波数帯域内の分割数によるループ
+		for (unsigned int j = 0; j < csw.at(i).size(); ++j) // 周波数帯域内の分割数によるループ
 		{
 			complex<double> frac_over(1.0, 1.0);
 			complex<double> frac_under(1.0, 1.0);
@@ -469,12 +469,12 @@ vector<vector<complex<double>>> FilterParam::freq_res_no(const vector<double>& c
 	vector<vector<complex<double>>> freq;
 		freq.reserve(bands.size());
 
-	for (unsigned int i = 0; i < bands.size(); ++i)    // 周波数帯域のループ
+	for (unsigned int i = 0; i < bands.size(); ++i) // 周波数帯域のループ
 	{
 		vector<complex<double>> freq_band;
-			freq_band.reserve(csw.at(i).size());
+		freq_band.reserve(csw.at(i).size());
 
-		for (unsigned int j = 0; j < csw.at(i).size(); ++j)  // 周波数帯域内の分割数によるループ
+		for (unsigned int j = 0; j < csw.at(i).size(); ++j) // 周波数帯域内の分割数によるループ
 		{
 			complex<double> freq_denominator(1.0, 1.0);
 			complex<double> freq_numerator(1.0, 1.0);
@@ -484,16 +484,16 @@ vector<vector<complex<double>>> FilterParam::freq_res_no(const vector<double>& c
 			{
 				freq_numerator *= 1.0 + coef.at(n)*csw.at(i).at(j) + coef.at(n + 1)*csw2.at(i).at(j);
 			}
-			for (unsigned int m = n_order + 1; m < opt_order(); m += 2)		//分母の総乗ループ
+			for (unsigned int m = n_order + 1; m < opt_order(); m += 2) //分母の総乗ループ
 			{
-				freq_denominator *= 1.0 + coef.at(m)*csw.at(i).at(j) + coef.at(m + 1)*csw2.at(i).at(j);
+				freq_denominsator *= 1.0 + coef.at(m)*csw.at(i).at(j) + coef.at(m + 1)*csw2.at(i).at(j);
 			}
 
 			freq_band.emplace_back( coef.at(0)*(freq_numerator / freq_denominator));
 		}
 		freq.emplace_back(freq_band);
 	}
-	
+
 	return freq;
 }
 
@@ -582,4 +582,49 @@ double FilterParam::evaluate(const vector<double> &coef) const // 目的関数�
 		}
 	}
 	return(max_error + ct*max_riple*max_riple + cs*penalty_stability);
+}
+
+	return freq;
+}
+
+vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) // 周波数特性計算関数
+{
+	vector<vector<complex<double>>> freq;
+	freq.reserve(bands.size());
+
+	for (unsigned int i = 0; i < bands.size(); ++i) // 周波数帯域のループ(L.P.F.なら３つ)
+	{
+		vector<complex<double>> freq_band;
+		freq_band.reserve(csw.at(i).size());
+
+		// csw.at(i), csw2.at(i), bands.at(i)がその周波数帯域で使う値に
+		// cswは複素正弦波、e^-jω
+
+		for (unsigned int j = 0; j < csw.at(i).size(); ++j) //周波数帯域内の分割数によるループ
+		{
+			// 2次の分子なら
+			// 1 + coef[0]*csw.at(i).at(j) + coef[1]*csw2.at(i).at(j)
+			// みたいにかける
+			// 係数のインデックスはおかしいけど、適当に埋めてあるだけです
+
+			complex<double> freq_denominator(1.0, 1.0); 
+			complex<double> freq_numerator(1.0, 1.0);
+
+			freq_numerator *= 1.0 + (coef.at(1) * csw.at(i).at(j));
+			freq_denominator *= 1.0 + (coef.at(n_order + 1) * csw.at(i).at(j));
+
+			for (unsigned int N = 2; N < n_order; N += 2) 
+			{
+				freq_numerator *= (1.0 + coef.at(N) * csw.at(i).at(j) + coef.at(N + 1) * csw2.at(i).at(j));
+			}
+
+			for (unsigned int M = n_order + 2; M < opt_order(); M += 2) 
+			{
+				freq_denominator *= (1.0 + coef.at(M) * csw.at(i).at(j) + coef.at(M + 1) * csw2.at(i).at(j));
+			}
+			freq_band.emplace_back(coef.at(0) * (freq_numerator / freq_denominator));
+		}
+	}
+	return freq;
+	// もちろんreturnは適当にする必要があります(書いてないだけ)
 }
