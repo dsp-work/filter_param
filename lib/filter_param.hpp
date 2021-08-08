@@ -174,6 +174,8 @@ public:
 	{ return this->freq_res_func(coef); }
 	
 
+	vector<vector<complex<double>>> freq_res_so(vector<double>&);   
+
 	// static function
 	
 	static vector<FilterParam> read_csv(string&);
