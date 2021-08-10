@@ -245,33 +245,27 @@ FilterParam::FilterParam
 		}
 	}
 
-	vector<unsigned int> split;
-	split.reserve(bands.size());
+	nsplits.reserve(bands.size());
 	for (auto bp : bands)
 	{
 		switch (bp.type())
 		{
-			case BandType::Pass:
-			{
-				split.emplace_back(
-					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
-				break;
-			}
-			case BandType::Stop:
-			{
-				split.emplace_back(
-					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
-				break;
-			}
-			case BandType::Transition:
-			{
-				split.emplace_back(
-					(unsigned int)((double)nsplit_transition * bp.width() / transition_range));
-				break;
-			}
+		case BandType::Pass:
+		case BandType::Stop:
+		{
+			nsplits.emplace_back(
+				(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
+			break;
+		}
+		case BandType::Transition:
+		{
+			nsplits.emplace_back(
+				(unsigned int)((double)nsplit_transition * bp.width() / transition_range));
+			break;
+		}
 		}
 	}
-	split.at(0) += 1;
+	nsplits.at(0) += 1;
 
 	// generate complex sin wave(e^-jω)
 	// desire frequency response
