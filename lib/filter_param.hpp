@@ -110,6 +110,8 @@ protected:
 	double group_delay;
 	double threshold_riple;
 
+	vector<unsigned int> nsplits;
+
 	// 内部パラメータ
 	
 	vector<vector<complex<double>>> csw;			// 複素正弦波e^-jωを周波数帯域別に格納
@@ -147,6 +149,8 @@ public:
 	{ return 1 + n_order + m_order; }
 	vector<BandParam> fbands() const
 	{ return bands; }
+	vector<unsigned int> partitions() const
+	{ return nsplits; }
 	unsigned int partition_approx() const
 	{ return nsplit_approx; }
 	unsigned int partition_transition() const
