@@ -17,6 +17,7 @@ void test_BandParam_new();
 void test_Band_generator();
 void test_analyze_edges();
 void test_FilterParam_read_csv();
+void test_FilterParam_nsplits();
 void test_FilterParam_csw();
 void test_FilterParam_desire_res();
 void test_FilterParam_freq_res_speed();
@@ -40,8 +41,7 @@ int main(void)
 {
 	printf("example run\n");
 
-	test_FilterParam_gprint_amp();
-	test_FilterParam_gprint_mag();
+	test_FilterParam_nsplits();
 
 	return 0;
 }
@@ -117,6 +117,19 @@ void test_FilterParam_read_csv()
 		}
 		printf("---------------------------\n");
 	}
+}
+
+void test_FilterParam_nsplits()
+{
+    auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.3);
+    FilterParam fparam(8, 2, bands, 200, 50, 5.0);
+
+    auto splits = fparam.partitions();
+    for(auto split :splits)
+    {
+    	printf("%d ", split);
+    }
+    printf("\n");
 }
 
 /* フィルタ構造体

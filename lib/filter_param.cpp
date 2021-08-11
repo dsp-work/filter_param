@@ -227,42 +227,39 @@ FilterParam::FilterParam
 	{
 		switch (bp.type())
 		{
-		case BandType::Pass:
-		{
-			approx_range += bp.width();
-			break;
-		}
-		case BandType::Stop:
-		{
-			approx_range += bp.width();
-			break;
-		}
-		case BandType::Transition:
-		{
-			transition_range += bp.width();
-			break;
-		}
+			case BandType::Pass:
+			case BandType::Stop:
+			{
+				approx_range += bp.width();
+				break;
+			}
+			case BandType::Transition:
+			{
+				transition_range += bp.width();
+				break;
+			}
 		}
 	}
 
 	nsplits.reserve(bands.size());
+	double surplus = 0.0;
 	for (auto bp : bands)
 	{
 		switch (bp.type())
 		{
-		case BandType::Pass:
-		case BandType::Stop:
-		{
-			nsplits.emplace_back(
-				(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
-			break;
-		}
-		case BandType::Transition:
-		{
-			nsplits.emplace_back(
-				(unsigned int)((double)nsplit_transition * bp.width() / transition_range));
-			break;
-		}
+			case BandType::Pass:
+			case BandType::Stop:
+			{
+				nsplits.emplace_back(
+					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
+				break;
+			}
+			case BandType::Transition:
+			{
+				nsplits.emplace_back(
+					(unsigned int)((double)nsplit_transition * bp.width() / transition_range));
+				break;
+			}
 		}
 	}
 	nsplits.at(0) += 1;
