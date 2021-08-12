@@ -16,7 +16,6 @@ void test_Band_generator();
 void test_analyze_edges();
 void test_FilterParam_read_csv();
 void test_FilterParam_csw();
-void test_FilterParam_desire_res();
 void test_FilterParam_freq_res_se();
 void test_FilterParam_freq_res_no();
 void test_FilterParam_freq_res_mo();
@@ -114,53 +113,15 @@ void test_FilterParam_csw()
 	auto csw = FilterParam::gen_csw(band, 100);
 	auto csw2 = FilterParam::gen_csw2(band, 100);
 
-	for(auto z :csw)
+	for (auto z : csw)
 	{
 		printf("%6f %6f\n", z.real(), z.imag());
 	}
 	printf("\n\n\n\n");
-	for(auto z :csw2)
+	for (auto z : csw2)
 	{
 		printf("%6f %6f\n", z.real(), z.imag());
 	}
-}
-
-/* # フィルタ構造体
- *   所望特性の周波数特性についてのテスト関数
- *   通過域でe^jωτ(τ= group delay)，
- *   阻止域で０，遷移域で要素なしの出力
- */
-void test_FilterParam_desire_res()
-{
-	double gd = 5.0;
-
-	auto pass_band = BandParam(BandType::Pass, 0.0, 0.2);
-	auto desire_pass = FilterParam::gen_desire_res(pass_band, 100, gd);
-	printf("-----------pass band-----------------\n");
-	for(auto z :desire_pass)
-	{
-		printf("%6f %6f\n", z.real(), z.imag());
-	}
-	printf("----------------------------\n\n");
-
-	auto stop_band = BandParam(BandType::Stop, 0.0, 0.2);
-	auto desire_stop = FilterParam::gen_desire_res(stop_band, 100, gd);
-	printf("-----------stop band-----------------\n");
-	for(auto z :desire_stop)
-	{
-		printf("%6f %6f\n", z.real(), z.imag());
-	}
-	printf("----------------------------\n\n");
-
-	auto trans_band = BandParam(BandType::Transition, 0.0, 0.2);
-	auto desire_trans = FilterParam::gen_desire_res(trans_band, 100, gd);
-	printf("-----------transition band-----------------\n");
-	for(auto z :desire_trans)
-	{
-		printf("%6f %6f\n", z.real(), z.imag());
-	}
-	printf("----------------------------\n\n");
-
 }
 
 /* フィルタ構造体
@@ -169,40 +130,37 @@ void test_FilterParam_desire_res()
  */
 void test_FilterParam_freq_res_se()
 {
-    vector<double> coef
-    {
-        0.018656458,
+	vector<double> coef{
+		0.018656458,
 
-        1.969338828,
-        1.120102082,
-        0.388717952,
-        0.996398946,
-        1.048137529,
-        1.037079725,
-        -4.535575709,
-        6.381429398,
+		1.969338828,
+		1.120102082,
+		0.388717952,
+		0.996398946,
+		1.048137529,
+		1.037079725,
+		-4.535575709,
+		6.381429398,
 
-        -0.139429968,
-        0.763426685
-    };
-    auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.3);
-    FilterParam fparam(8, 2, bands, 200, 50, 5.0);
+		-0.139429968,
+		0.763426685};
+	auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.3);
+	FilterParam fparam(8, 2, bands, 200, 50, 5.0);
 
-    auto freq_res = fparam.freq_res(coef);
+	auto freq_res = fparam.freq_res(coef);
 
-    for(auto band_res :freq_res)
-    {
-        for(auto res :band_res)
-        {
-            printf("%f\n", abs(res));
-        }
-    }
+	for (auto band_res : freq_res)
+	{
+		for (auto res : band_res)
+		{
+			printf("%f\n", abs(res));
+		}
+	}
 }
 
 void test_FilterParam_freq_res_no()
 {
-	vector<double> coef
-	{
+	vector<double> coef{
 		0.025247504683641238,
 
 		0.8885952985540255,
@@ -216,18 +174,17 @@ void test_FilterParam_freq_res_no()
 		-0.686114259307724,
 		0.22008381076439384,
 		-0.22066728558327908,
-		0.7668032045079851
-	};
+		0.7668032045079851};
 	auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.275);
-	FilterParam Fparam(7,4,bands,200,50,5.0);
+	FilterParam Fparam(7, 4, bands, 200, 50, 5.0);
 
-	vector<vector<complex<double>>> freq=Fparam.freq_res(coef);
+	vector<vector<complex<double>>> freq = Fparam.freq_res(coef);
 
-	for(auto band:freq)
+	for (auto band : freq)
 	{
-		for(auto amp:band)
+		for (auto amp : band)
 		{
-			printf("%f\n",abs(amp));
+			printf("%f\n", abs(amp));
 		}
 	}
 }
@@ -245,19 +202,18 @@ void test_FilterParam_freq_res_mo()
 		0.79143639,
 		-1.149627531,
 		0.965348065,
-		
+
 		-0.434908839,
 		-1.332562129,
-		0.838349784
-	};
+		0.838349784};
 	auto bands = FilterParam::gen_bands(FilterType::LPF, 0.1, 0.145);
 	FilterParam fparam(8, 3, bands, 200, 50, 5.0);
 
 	auto freq_res = fparam.freq_res(coef);
 
-	for(auto band_res :freq_res)
+	for (auto band_res : freq_res)
 	{
-		for(auto res :band_res)
+		for (auto res : band_res)
 		{
 			printf("%f\n", abs(res));
 		}
@@ -377,4 +333,31 @@ void test_evaluate_objective_function()
 	auto objective_function_value = Fparam.evaluate(coef);
 
 	printf("objective_function_value %f\n",objective_function_value);
+}
+void test_FilterParam_freq_res_so()
+{
+	vector<double> coef{
+		-0.040659737,
+		-2.372311969,
+
+		-2.144646171,
+		4.343497453,
+		1.359348897,
+		0.984834163,
+
+		-0.710147059,
+		-0.696696684,
+		0.514853197,
+		0.503697311,
+		0.70680348};
+	auto bands = FilterParam::gen_bands(FilterType::LPF, 0.3, 0.345);
+	FilterParam fparam(5, 5, bands, 200, 50, 5.0);
+	auto freq_res = fparam.freq_res(coef);
+	for (auto band_res : freq_res)
+	{
+		for (auto res : band_res)
+		{
+			printf("%f\n", abs(res));
+		}
+	}
 }
