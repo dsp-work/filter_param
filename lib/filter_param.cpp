@@ -549,18 +549,18 @@ vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) /
 			// みたいにかける
 			// 係数のインデックスはおかしいけど、適当に埋めてあるだけです
 
-			complex<double> freq_denominator(1.0, 1.0); //分母
+			complex<double> freq_denominator(1.0, 1.0); 
 			complex<double> freq_numerator(1.0, 1.0);
 
 			freq_numerator *= 1.0 + (coef.at(1) * csw.at(i).at(j));
-			freq_denominator *= 1.0 + (coef.at(1) * csw.at(i).at(j));
+			freq_denominator *= 1.0 + (coef.at(n_order+1) * csw.at(i).at(j));
 
-			for (unsigned int N = 2; N < n_order; N += 2) //フィルタ係数の分子
+			for (unsigned int N = 2; N < n_order; N += 2) 
 			{
 				freq_numerator *= (1.0 + coef.at(N) * csw.at(i).at(j) + coef.at(N + 1) * csw2.at(i).at(j));
 			}
 
-			for (unsigned int M = n_order; M < opt_order(); M += 2) //フィルタ係数の分母
+			for (unsigned int M = n_order+2; M < opt_order(); M += 2) 
 			{
 				freq_denominator *= (1.0 + coef.at(M) * csw.at(i).at(j) + coef.at(M + 1) * csw2.at(i).at(j));
 			}
