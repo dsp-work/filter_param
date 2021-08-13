@@ -587,7 +587,7 @@ double FilterParam::evaluate(const vector<double> &coef) const // 目的関数�
 	return freq;
 }
 
-vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) // 周波数特性計算関数
+vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) 
 {
 	vector<vector<complex<double>>> freq;
 	freq.reserve(bands.size());
@@ -597,27 +597,18 @@ vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) /
 		vector<complex<double>> freq_band;
 		freq_band.reserve(csw.at(i).size());
 
-		// csw.at(i), csw2.at(i), bands.at(i)がその周波数帯域で使う値に
-		// cswは複素正弦波、e^-jω
-
 		for (unsigned int j = 0; j < csw.at(i).size(); ++j) //周波数帯域内の分割数によるループ
 		{
-			// 2次の分子なら
-			// 1 + coef[0]*csw.at(i).at(j) + coef[1]*csw2.at(i).at(j)
-			// みたいにかける
-			// 係数のインデックスはおかしいけど、適当に埋めてあるだけです
-
 			complex<double> freq_denominator(1.0, 1.0); 
 			complex<double> freq_numerator(1.0, 1.0);
 
 			freq_numerator *= 1.0 + (coef.at(1) * csw.at(i).at(j));
-			freq_denominator *= 1.0 + (coef.at(n_order + 1) * csw.at(i).at(j));
-
 			for (unsigned int N = 2; N < n_order; N += 2) 
 			{
 				freq_numerator *= (1.0 + coef.at(N) * csw.at(i).at(j) + coef.at(N + 1) * csw2.at(i).at(j));
 			}
 
+            freq_denominator *= 1.0 + (coef.at(n_order + 1) * csw.at(i).at(j));
 			for (unsigned int M = n_order + 2; M < opt_order(); M += 2) 
 			{
 				freq_denominator *= (1.0 + coef.at(M) * csw.at(i).at(j) + coef.at(M + 1) * csw2.at(i).at(j));
@@ -626,5 +617,4 @@ vector<vector<complex<double>>> FilterParam::freq_res_so(vector<double> &coef) /
 		}
 	}
 	return freq;
-	// もちろんreturnは適当にする必要があります(書いてないだけ)
 }
