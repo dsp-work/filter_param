@@ -242,7 +242,8 @@ FilterParam::FilterParam
 	}
 
 	nsplits.reserve(bands.size());
-	double surplus = 0.0;
+	double approx_surplus = 0.0;
+	double trans_surplus = 0.0;
 	for (auto bp : bands)
 	{
 		switch (bp.type())
@@ -250,8 +251,10 @@ FilterParam::FilterParam
 			case BandType::Pass:
 			case BandType::Stop:
 			{
-				nsplits.emplace_back(
-					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
+				double split = (double)nsplit_approx * bp.width() / approx_range;
+				approx_surplus += split - (double)((unsigned int)split);
+				nsplits.emplace_back((unsigned int)split);
+				printf("%d, %f\n", (unsigned int)split, approx_surplus);
 				break;
 			}
 			case BandType::Transition:
@@ -271,9 +274,9 @@ FilterParam::FilterParam
 	desire_res.reserve(bands.size());
 	for (unsigned int i = 0; i < bands.size(); ++i)
 	{
-		csw.emplace_back(gen_csw(bands.at(i), split.at(i)));
-		csw2.emplace_back(gen_csw2(bands.at(i), split.at(i)));
-		desire_res.emplace_back(gen_desire_res(bands.at(i), split.at(i), group_delay));
+		csw.emplace_back(gen_csw(bands.at(i), nsplits.at(i)));
+		csw2.emplace_back(gen_csw2(bands.at(i), nsplits.at(i)));
+		desire_res.emplace_back(gen_desire_res(bands.at(i), nsplits.at(i), group_delay));
 	}
 
 	// decide using function

@@ -121,7 +121,15 @@ void test_FilterParam_read_csv()
 
 void test_FilterParam_nsplits()
 {
-    auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.3);
+    auto bands = //FilterParam::gen_bands(FilterType::LPF, 0.215, 0.3);
+	vector<BandParam>
+	{
+    	BandParam(BandType::Pass, 0.0, 0.2175),
+    	BandParam(BandType::Transition, 0.2175, 0.24),
+		BandParam(BandType::Stop, 0.24, 0.3),
+		BandParam(BandType::Transition, 0.3, 0.325),
+		BandParam(BandType::Pass, 0.325, 0.5)
+	};
     FilterParam fparam(8, 2, bands, 200, 50, 5.0);
 
     auto splits = fparam.partitions();
