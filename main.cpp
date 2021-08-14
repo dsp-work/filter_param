@@ -30,7 +30,7 @@ void test_evaluate_objective_function();
 int main(void)
 {
 	printf("example run\n");
-	printf("thread will ce locked about 2 minutes.\n");
+	printf("thread will be locked about max 2 minutes.\n");
 
 // 時間計測関連
 	int trial = 100;

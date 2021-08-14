@@ -179,7 +179,7 @@ public:
 	 *   vector<vector<complex<double>>> response : 周波数帯域-周波数分割数の2重配列
 	 */
 	vector<vector<complex<double>>> freq_res(const vector<double>& coef) const
-	{ return this->freq_res_func(this, coef); }
+	{ return this->freq_res_func(coef); }
 	
 
 	/*
