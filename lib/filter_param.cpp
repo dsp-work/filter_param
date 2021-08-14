@@ -522,3 +522,45 @@ vector<vector<complex<double>>> FilterParam::freq_res_mo(const vector<double>& c
 	
 	return freq;
 }
+
+vector<vector<complex<double>>> FilterParam::freq_res(const vector<double>& coef) const
+{
+	vector<vector<complex<double>>> freq;
+		freq.reserve(bands.size());
+
+	for (unsigned int i = 0; i < bands.size(); ++i) // 周波数帯域のループ(L.P.F.なら３つ)
+	{
+		vector<complex<double>> freq_band;
+			freq_band.reserve(csw.at(i).size());
+
+		for (unsigned int j = 0; j < csw.at(i).size(); ++j) //周波数帯域内の分割数によるループ
+		{
+			complex<double> freq_denominator(1.0, 1.0);
+			complex<double> freq_numerator(1.0, 1.0);
+			unsigned int index = 0;
+
+			if((n_order % 2) == 1)
+			{
+				freq_numerator *= 1.0 + (coef.at(++index) * csw.at(i).at(j));
+			}
+			for (unsigned int n = 0; n < n_order / 2; ++n)
+			{
+				freq_numerator *= (1.0 + coef.at(index + 1) * csw.at(i).at(j) + coef.at(index + 2) * csw2.at(i).at(j));
+				index += 2;
+			}
+
+			if((m_order % 2) == 1)
+			{
+	            freq_denominator *= 1.0 + (coef.at(++index) * csw.at(i).at(j));
+			}
+			for (unsigned int m = 0; m < m_order / 2; ++m)
+			{
+				freq_denominator *= (1.0 + coef.at(index + 1) * csw.at(i).at(j) + coef.at(index + 2) * csw2.at(i).at(j));
+				index += 2;
+			}
+			freq_band.emplace_back(coef.at(0) * (freq_numerator / freq_denominator));
+		}
+		freq.emplace_back(freq_band);
+	}
+	return freq;
+}
