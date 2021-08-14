@@ -5,9 +5,12 @@
  *      Author: matsu
  */
 
+#include "./lib/filter_param.hpp"
+
 #include <stdio.h>
 #include <string>
-#include "./lib/filter_param.hpp"
+#include <chrono>
+
 
 using namespace std;
 
@@ -25,8 +28,53 @@ void test_FilterParam_freq_res_mo();
 int main(void)
 {
 	printf("example run\n");
+	printf("thread will ce locked about 2 minutes.\n");
 
-	test_FilterParam_nsplits();
+// 時間計測関連
+	int trial = 100;
+	int repeat = pow(10, 5);
+	double ave = 0.0;
+
+// 計測雑利用
+    vector<double> coef
+    {
+        0.018656458,
+
+        1.969338828,
+        1.120102082,
+        0.388717952,
+        0.996398946,
+        1.048137529,
+        1.037079725,
+        -4.535575709,
+        6.381429398,
+
+        -0.139429968,
+        0.763426685
+    };
+    auto bands = FilterParam::gen_bands(FilterType::LPF, 0.2, 0.3);
+    FilterParam fparam(8, 2, bands, 200, 50, 5.0);
+    vector<vector<complex<double>>> freq_res;
+
+	for(int i = 0 ; i < trial ; ++i)
+	{
+		auto start1 = chrono::system_clock::now();      // 計測スタート時刻を保存
+
+		for(int j = 0 ; j < repeat ; ++j)
+		{
+		    freq_res = fparam.freq_res(coef);
+		}
+
+		auto end1 = chrono::system_clock::now();       // 計測終了時刻を保存
+		double msec1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
+		double once_time1 = msec1 / (double)repeat;
+		ave += once_time1;
+
+	}
+
+	printf("\n------------------------------------\n\n\n\n");
+	printf("using functional : Average %15.15f[ns]\n", 1000*1000*ave / (double)trial);
+	printf("size : %lld\n", sizeof(fparam));
 
 	return 0;
 }
