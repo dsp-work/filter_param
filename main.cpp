@@ -34,8 +34,10 @@ int main(void)
 
 // 時間計測関連
 	int trial = 100;
-	int repeat = pow(10, 5);
+	int exp_ = 5;
+	int repeat = pow(10, exp_);
 	double ave = 0.0;
+	double ave_all = 0.0;
 
 // 計測雑利用
     vector<double> coef
@@ -71,12 +73,13 @@ int main(void)
 		double msec1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
 		double once_time1 = msec1 / (double)repeat;
 		ave += once_time1;
-
+		ave_all += msec1;
 	}
 
 	printf("\n------------------------------------\n\n\n\n");
 	printf("using functional : Average %15.15f[ns]\n", 1000*1000*ave / (double)trial);
-	printf("size : %lld\n", sizeof(fparam));
+	printf("using functional : All(10^%d) %15.15f[ms]\n", exp_, ave_all / (double)trial);
+	printf("Size : %lld\n", sizeof(fparam));
 
 	return 0;
 }
