@@ -162,18 +162,18 @@ FilterParam::FilterParam
 	{
 		if ((m_order % 2) == 0)
 		{
-			freq_res_func = bind(&FilterParam::freq_res_se, this,placeholders::_1);
+			freq_res_func = &FilterParam::freq_res_se;
 		}
 		else
 		{
-			freq_res_func = bind(&FilterParam::freq_res_mo, this,placeholders::_1);
+			freq_res_func = &FilterParam::freq_res_mo;
 		}
 	}
 	else
 	{
 		if ((m_order % 2) == 0)
 		{
-			freq_res_func = bind(&FilterParam::freq_res_no, this,placeholders::_1);
+			freq_res_func = &FilterParam::freq_res_no;
 		}
 		else
 		{

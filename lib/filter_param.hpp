@@ -118,7 +118,7 @@ protected:
 	vector<vector<complex<double>>> csw2;			// 複素正弦波e^-j2ωを周波数帯域別に格納
 	vector<vector<complex<double>>> desire_res;		// 所望特性の周波数特性
 
-	function< vector<vector<complex<double>>>(const vector<double>&) > freq_res_func;
+	function< vector<vector<complex<double>>>(const FilterParam*, const vector<double>&) > freq_res_func;
 
 	// 内部メソッド
 
@@ -175,7 +175,7 @@ public:
 	 *   vector<vector<complex<double>>> response : 周波数帯域-周波数分割数の2重配列
 	 */
 	vector<vector<complex<double>>> freq_res(const vector<double>& coef) const
-	{ return this->freq_res_func(coef); }
+	{ return this->freq_res_func(this, coef); }
 	
 
 	// static function
