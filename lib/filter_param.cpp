@@ -227,51 +227,45 @@ FilterParam::FilterParam
 	{
 		switch (bp.type())
 		{
-		case BandType::Pass:
-		{
-			approx_range += bp.width();
-			break;
-		}
-		case BandType::Stop:
-		{
-			approx_range += bp.width();
-			break;
-		}
-		case BandType::Transition:
-		{
-			transition_range += bp.width();
-			break;
-		}
+			case BandType::Pass:
+			case BandType::Stop:
+			{
+				approx_range += bp.width();
+				break;
+			}
+			case BandType::Transition:
+			{
+				transition_range += bp.width();
+				break;
+			}
 		}
 	}
 
-	vector<unsigned int> split;
-	split.reserve(bands.size());
+	nsplits.reserve(bands.size());
+	double approx_surplus = 0.0;
+	double trans_surplus = 0.0;
 	for (auto bp : bands)
 	{
 		switch (bp.type())
 		{
 			case BandType::Pass:
-			{
-				split.emplace_back(
-					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
-				break;
-			}
 			case BandType::Stop:
 			{
-				split.emplace_back(
-					(unsigned int)((double)nsplit_approx * bp.width() / approx_range));
+				double split = (double)nsplit_approx * bp.width() / approx_range;
+				approx_surplus += split - (double)((unsigned int)split);
+				nsplits.emplace_back((unsigned int)split);
+				printf("%d, %f\n", (unsigned int)split, approx_surplus);
 				break;
 			}
 			case BandType::Transition:
 			{
-				split.emplace_back(
+				nsplits.emplace_back(
 					(unsigned int)((double)nsplit_transition * bp.width() / transition_range));
 				break;
 			}
 		}
 	}
-	split.at(0) += 1;
+	nsplits.at(0) += 1;
 
 	// generate complex sin wave(e^-jω)
 	// desire frequency response
@@ -280,9 +274,9 @@ FilterParam::FilterParam
 	desire_res.reserve(bands.size());
 	for (unsigned int i = 0; i < bands.size(); ++i)
 	{
-		csw.emplace_back(gen_csw(bands.at(i), split.at(i)));
-		csw2.emplace_back(gen_csw2(bands.at(i), split.at(i)));
-		desire_res.emplace_back(gen_desire_res(bands.at(i), split.at(i), group_delay));
+		csw.emplace_back(gen_csw(bands.at(i), nsplits.at(i)));
+		csw2.emplace_back(gen_csw2(bands.at(i), nsplits.at(i)));
+		desire_res.emplace_back(gen_desire_res(bands.at(i), nsplits.at(i), group_delay));
 	}
 
 	// decide using function
