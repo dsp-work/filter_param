@@ -133,6 +133,10 @@ namespace filter
                 const FilterParam*, const std::vector< double >& ) >
                 stability_func;
 
+            std::function< std::vector<std::complex<double>>(const FilterParam*, const std::vector<double>&) > pole_func;
+            std::function< std::vector<std::complex<double>>(const FilterParam*, const std::vector<double>&) > zero_func;
+
+
             // 内部メソッド
 
             FilterParam()
@@ -161,6 +165,12 @@ namespace filter
 
             double judge_stability_even( const std::vector< double >& ) const;
             double judge_stability_odd( const std::vector< double >& ) const;
+
+            std::vector<std::complex<double>> pole_even(const std::vector<double>&) const;
+            std::vector<std::complex<double>> pole_odd(const std::vector<double>&) const;
+            std::vector<std::complex<double>> zero_even(const std::vector<double>&) const;
+            std::vector<std::complex<double>> zero_odd(const std::vector<double>&) const;
+
 
         public:
 
@@ -249,6 +259,28 @@ namespace filter
             {
                 return this->stability_func( this, coef );
             }
+
+            /* # フィルタ構造体
+             *   極計算関数
+             *
+             *   # 引数
+             *   vector<double> coef : 係数列(a0, a1, a2[0], a2[1],..., b1, b2[0], b2[1],...)
+             *   #返り値
+             *   vector<complex<double>> response : 極の値の配列
+             */
+            std::vector<std::complex<double>> pole_res(const std::vector<double>& coef) const
+            { return this->pole_func(this, coef); }
+
+             /* # フィルタ構造体
+             *   零点計算関数
+             *
+             *   # 引数
+             *   vector<double> coef : 係数列(a0, a1, a2[0], a2[1],..., b1, b2[0], b2[1],...)
+             *   #返り値
+             *   vector<complex<double>> response : 零点の値の配列
+             */
+            std::vector<std::complex<double>> zero_res(const std::vector<double>& coef) const
+            { return this->zero_func(this, coef); }
 
             double evaluate( const std::vector< double >& ) const;
             std::vector< double >

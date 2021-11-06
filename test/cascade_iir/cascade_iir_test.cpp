@@ -7,9 +7,11 @@
 
 #include "cascade_iir.hpp"
 
+#include <assert.h>
 #include <chrono>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
+
 
 using namespace std;
 using namespace filter::iir;
@@ -36,6 +38,10 @@ void test_FilterParam_init_coef();
 void test_FilterParam_init_stable_coef();
 void test_FilterParam_gprint_amp();
 void test_FilterParam_gprint_mag();
+void test_FilterParam_pole_even();
+void test_FilterParam_pole_odd();
+void test_FilterParam_zero_even();
+void test_FilterParam_zero_odd();
 
 int main( int argc, char** argv )
 {
@@ -775,4 +781,305 @@ void test_FilterParam_gprint_mag()
 
     // fparam.gprint_mag(coef_test, string("Mag7.png"), 0.2, 0.6);
     // //BandParamよりright>0.5のため失敗
+}
+
+/* フィルタ構造体
+ * 分母の係数列から極、分子の係数列から零点の計算を
+ * 係数列数が奇数の場合と偶数の場合で行う
+ *
+ */
+void test_FilterParam_pole_even()
+{
+    auto bands = FilterParam::gen_bands( FilterType::LPF, 0.2, 0.3 );
+    FilterParam fparam( 0, 6, bands, 200, 50, 5.0 );
+
+    vector< double > coef {
+        0.018656458,
+
+        -4.097963802039866,         // 複素解の組み合わせ
+        5.496940685423355,          // 複素解の組み合わせ
+        -1.585891794,               // 実数解の組み合わせ
+        -1.903482473,               // 実数解の組み合わせ
+        1.1168784833810899,         // 重解の組み合わせ
+        0.3118543866599108769856    // 重解の組み合わせ
+    };
+
+    auto pole_res = fparam.pole_res( coef );
+
+    for ( auto pole : pole_res )
+    {
+        printf( "%.15f %.15f\n", pole.real(), pole.imag() );
+    }
+
+    const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+
+    std::vector< complex< double > > test_pole;
+    test_pole.reserve( 5 );
+
+    for ( unsigned int m = 1; m < 7; m += 2 )
+    {
+        double disc = coef.at( m ) * coef.at( m ) - 4.0 * coef.at( m + 1 );
+
+        if ( disc < -acc )    // 複素解
+        {
+            double disc_sqrt = sqrt( -disc );
+            complex< double > plus_test_pole( -coef.at( m ) / 2.0, disc_sqrt / 2.0 );
+            complex< double > minus_test_pole( -coef.at( m ) / 2.0, -disc_sqrt / 2.0 );
+            test_pole.emplace_back( plus_test_pole );
+            test_pole.emplace_back( minus_test_pole );
+            printf( "%.15f %.15f\n", plus_test_pole.real(), plus_test_pole.imag() );
+            printf( "%.15f %.15f\n", minus_test_pole.real(), minus_test_pole.imag() );
+        }
+        else if ( disc > acc )    // 実数解
+        {
+            double disc_sqrt = sqrt( disc );
+            complex< double > plus_test_pole( ( -coef.at( m ) + disc_sqrt ) / 2.0, 0.0 );
+            complex< double > minus_test_pole( ( -coef.at( m ) - disc_sqrt ) / 2.0, 0.0 );
+            test_pole.emplace_back( plus_test_pole );
+            test_pole.emplace_back( minus_test_pole );
+            printf( "%.15f %.15f\n", plus_test_pole.real(), plus_test_pole.imag() );
+            printf( "%.15f %.15f\n", minus_test_pole.real(), minus_test_pole.imag() );
+        }
+        else if ( disc >= -acc && disc <= acc )    // 重解
+        {
+            complex< double > multiple_test_pole( -coef.at( m ) / 2.0, 0.0 );
+            test_pole.emplace_back( multiple_test_pole );
+            printf( "%.15f %.15f\n", multiple_test_pole.real(), multiple_test_pole.imag() );
+        }
+        else
+        {
+            exit( -1 );    // 場合分けで漏れた場合エラーが発生
+        }
+    }
+
+    const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
+    for ( unsigned int n = 0; n < 5; n++ )
+    {
+        assert( std::round( pole_res.at( n ).real() * acc2 ) == std::round( test_pole.at( n ).real() * acc2 ) );
+        assert( std::round( pole_res.at( n ).imag() * acc2 ) == std::round( test_pole.at( n ).imag() * acc2 ) );
+    }
+}
+
+void test_FilterParam_pole_odd()
+{
+    auto bands = FilterParam::gen_bands( FilterType::LPF, 0.3, 0.345 );
+    FilterParam fparam( 0, 7, bands, 200, 50, 5.0 );
+
+    vector< double > coef {
+        -0.040659737,
+
+        -0.710147059,
+        -4.097963802039866,         // 複素解の組み合わせ
+        5.496940685423355,          // 複素解の組み合わせ
+        -1.585891794,               // 実数解の組み合わせ
+        -1.903482473,               // 実数解の組み合わせ
+        1.1168784833810899,         // 重解の組み合わせ
+        0.3118543866599108769856    // 重解の組み合わせ
+    };
+
+    auto pole_res = fparam.pole_res( coef );
+
+    for ( auto pole : pole_res )
+    {
+        printf( "%.15f %.15f\n", pole.real(), pole.imag() );
+    }
+
+    const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+
+    std::vector< complex< double > > test_pole;
+    test_pole.reserve( 6 );
+
+    test_pole.emplace_back( -coef.at( 1 ) );
+    printf( "%.15f %.15f\n", -coef.at( 1 ), 0.0 );
+
+    for ( unsigned int m = 2; m < 8; m += 2 )
+    {
+        double disc = coef.at( m ) * coef.at( m ) - 4.0 * coef.at( m + 1 );
+
+        if ( disc < -acc )    // 複素解
+        {
+            double disc_sqrt = sqrt( -disc );
+            complex< double > plus_test_pole( -coef.at( m ) / 2.0, disc_sqrt / 2.0 );
+            complex< double > minus_test_pole( -coef.at( m ) / 2.0, -disc_sqrt / 2.0 );
+            test_pole.emplace_back( plus_test_pole );
+            test_pole.emplace_back( minus_test_pole );
+            printf( "%.15f %.15f\n", plus_test_pole.real(), plus_test_pole.imag() );
+            printf( "%.15f %.15f\n", minus_test_pole.real(), minus_test_pole.imag() );
+        }
+        else if ( disc > acc )    // 実数解
+        {
+            double disc_sqrt = sqrt( disc );
+            complex< double > plus_test_pole( ( -coef.at( m ) + disc_sqrt ) / 2.0, 0.0 );
+            complex< double > minus_test_pole( ( -coef.at( m ) - disc_sqrt ) / 2.0, 0.0 );
+            test_pole.emplace_back( plus_test_pole );
+            test_pole.emplace_back( minus_test_pole );
+            printf( "%.15f %.15f\n", plus_test_pole.real(), plus_test_pole.imag() );
+            printf( "%.15f %.15f\n", minus_test_pole.real(), minus_test_pole.imag() );
+        }
+        else if ( disc >= -acc && disc <= acc )    // 重解
+        {
+            complex< double > multiple_test_pole( -coef.at( m ) / 2.0, 0.0 );
+            test_pole.emplace_back( multiple_test_pole );
+            printf( "%.15f %.15f\n", multiple_test_pole.real(), multiple_test_pole.imag() );
+        }
+        else
+        {
+            exit( -1 );    // 場合分けで漏れた場合エラーが発生
+        }
+    }
+
+    const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
+    for ( unsigned int n = 0; n < 5; n++ )
+    {
+        assert( std::round( pole_res.at( n ).real() * acc2 ) == std::round( test_pole.at( n ).real() * acc2 ) );
+        assert( std::round( pole_res.at( n ).imag() * acc2 ) == std::round( test_pole.at( n ).imag() * acc2 ) );
+    }
+}
+
+void test_FilterParam_zero_even()
+{
+    auto bands = FilterParam::gen_bands( FilterType::LPF, 0.1, 0.145 );
+    FilterParam fparam( 6, 0, bands, 200, 50, 5.0 );
+
+    vector< double > coef {
+        -0.040404875,
+
+        -4.097963802039866,         // 複素解の組み合わせ
+        5.496940685423355,          // 複素解の組み合わせ
+        -1.585891794,               // 実数解の組み合わせ
+        -1.903482473,               // 実数解の組み合わせ
+        1.1168784833810899,         // 重解の組み合わせ
+        0.3118543866599108769856    // 重解の組み合わせ
+    };
+
+    auto zero_res = fparam.zero_res( coef );
+
+    for ( auto zero : zero_res )
+    {
+        printf( "%.15f %.15f\n", zero.real(), zero.imag() );
+    }
+
+    const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+
+    std::vector< complex< double > > test_zero;
+    test_zero.reserve( 5 );
+
+    for ( unsigned int n = 1; n < 7; n += 2 )
+    {
+        double disc = coef.at( n ) * coef.at( n ) - 4.0 * coef.at( n + 1 );
+
+        if ( disc < -acc )    // 複素解
+        {
+            double disc_sqrt = sqrt( -disc );
+            complex< double > plus_test_zero( -coef.at( n ) / 2.0, disc_sqrt / 2.0 );
+            complex< double > minus_test_zero( -coef.at( n ) / 2.0, -disc_sqrt / 2.0 );
+            test_zero.emplace_back( plus_test_zero );
+            test_zero.emplace_back( minus_test_zero );
+            printf( "%.15f %.15f\n", plus_test_zero.real(), plus_test_zero.imag() );
+            printf( "%.15f %.15f\n", minus_test_zero.real(), minus_test_zero.imag() );
+        }
+        else if ( disc > acc )    // 実数解
+        {
+            double disc_sqrt = sqrt( disc );
+            complex< double > plus_test_zero( ( -coef.at( n ) + disc_sqrt ) / 2.0, 0.0 );
+            complex< double > minus_test_zero( ( -coef.at( n ) - disc_sqrt ) / 2.0, 0.0 );
+            test_zero.emplace_back( plus_test_zero );
+            test_zero.emplace_back( minus_test_zero );
+            printf( "%.15f %.15f\n", plus_test_zero.real(), plus_test_zero.imag() );
+            printf( "%.15f %.15f\n", minus_test_zero.real(), minus_test_zero.imag() );
+        }
+        else if ( disc >= -acc && disc <= acc )    // 重解
+        {
+            complex< double > multiple_test_zero( -coef.at( n ) / 2.0, 0.0 );
+            test_zero.emplace_back( multiple_test_zero );
+            printf( "%.15f %.15f\n", multiple_test_zero.real(), multiple_test_zero.imag() );
+        }
+        else
+        {
+            exit( -1 );    // 場合分けで漏れた場合エラーが発生
+        }
+    }
+
+    const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
+    for ( unsigned int m = 0; m < 5; m++ )
+    {
+        assert( std::round( zero_res.at( m ).real() * acc2 ) == std::round( test_zero.at( m ).real() * acc2 ) );
+        assert( std::round( zero_res.at( m ).imag() * acc2 ) == std::round( test_zero.at( m ).imag() * acc2 ) );
+    }
+}
+
+void test_FilterParam_zero_odd()
+{
+    auto bands = FilterParam::gen_bands( FilterType::LPF, 0.2, 0.275 );
+    FilterParam fparam( 7, 0, bands, 200, 50, 5.0 );
+
+    vector< double > coef {
+        0.025247504683641238,
+
+        0.8885952985540255,
+        -4.097963802039866,         // 複素解の組み合わせ
+        5.496940685423355,          // 複素解の組み合わせ
+        -1.585891794,               // 実数解の組み合わせ
+        -1.903482473,               // 実数解の組み合わせ
+        1.1168784833810899,         // 重解の組み合わせ
+        0.3118543866599108769856    // 重解の組み合わせ
+    };
+
+    auto zero_res = fparam.zero_res( coef );
+
+    for ( auto zero : zero_res )
+    {
+        printf( "%.15f %.15f\n", zero.real(), zero.imag() );
+    }
+
+    const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+
+    std::vector< complex< double > > test_zero;
+    test_zero.reserve( 6 );
+
+    test_zero.emplace_back( -coef.at( 1 ) );
+    printf( "%.15f %.15f\n", -coef.at( 1 ), 0.0 );
+
+    for ( unsigned int n = 2; n < 8; n += 2 )
+    {
+        double disc = coef.at( n ) * coef.at( n ) - 4.0 * coef.at( n + 1 );
+
+        if ( disc < -acc )    // 複素解
+        {
+            double disc_sqrt = sqrt( -disc );
+            complex< double > plus_test_zero( -coef.at( n ) / 2.0, disc_sqrt / 2.0 );
+            complex< double > minus_test_zero( -coef.at( n ) / 2.0, -disc_sqrt / 2.0 );
+            test_zero.emplace_back( plus_test_zero );
+            test_zero.emplace_back( minus_test_zero );
+            printf( "%.15f %.15f\n", plus_test_zero.real(), plus_test_zero.imag() );
+            printf( "%.15f %.15f\n", minus_test_zero.real(), minus_test_zero.imag() );
+        }
+        else if ( disc > acc )    // 実数解
+        {
+            double disc_sqrt = sqrt( disc );
+            complex< double > plus_test_zero( ( -coef.at( n ) + disc_sqrt ) / 2.0, 0.0 );
+            complex< double > minus_test_zero( ( -coef.at( n ) - disc_sqrt ) / 2.0, 0.0 );
+            test_zero.emplace_back( plus_test_zero );
+            test_zero.emplace_back( minus_test_zero );
+            printf( "%.15f %.15f\n", plus_test_zero.real(), plus_test_zero.imag() );
+            printf( "%.15f %.15f\n", minus_test_zero.real(), minus_test_zero.imag() );
+        }
+        else if ( disc >= -acc && disc <= acc )    // 重解
+        {
+            complex< double > multiple_test_zero( -coef.at( n ) / 2.0, 0.0 );
+            test_zero.emplace_back( multiple_test_zero );
+            printf( "%.15f %.15f\n", multiple_test_zero.real(), multiple_test_zero.imag() );
+        }
+        else
+        {
+            exit( -1 );    // 場合分けで漏れた場合エラーが発生
+        }
+    }
+
+    const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
+    for ( unsigned int m = 0; m < 5; m++ )
+    {
+        assert( std::round( zero_res.at( m ).real() * acc2 ) == std::round( test_zero.at( m ).real() * acc2 ) );
+        assert( std::round( zero_res.at( m ).imag() * acc2 ) == std::round( test_zero.at( m ).imag() * acc2 ) );
+    }
 }
