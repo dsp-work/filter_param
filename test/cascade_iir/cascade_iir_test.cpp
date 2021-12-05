@@ -8,7 +8,7 @@
 #include "cascade_iir.hpp"
 
 #include <chrono>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <assert.h>
 
