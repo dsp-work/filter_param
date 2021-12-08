@@ -782,11 +782,20 @@ void test_FilterParam_gprint_mag()
     // //BandParamよりright>0.5のため失敗
 }
 
+/* フィルタ構造体
+ * 群遅延特性図の描画
+ * leftとrightで描画範囲の指定[0:0.5]
+ *
+ */
 void run_FilterParam_gprint_gd()
 {
     auto bands = FilterParam::gen_bands( FilterType::LPF, 0.2, 0.275 );
     FilterParam fparam( 7, 4, bands, 200, 50, 5.0 );
-    BandParam band1( BandType::Pass, 0.0, 0.3 );
+    BandParam band1( BandType::Pass, 0.0, 0.3 );    //左端に触れるもの
+    BandParam band2( BandType::Pass, 0.3, 0.5 );    //右端に触れるもの
+    BandParam band3( BandType::Pass, 0.1, 0.4 );    //両端に触れないもの
+    BandParam band4( BandType::Pass, 0.0, 0.5 );    //両端に触れるもの
+
 
     vector< double > coef_test { 0.025247504683641238,
 
@@ -799,4 +808,7 @@ void run_FilterParam_gprint_gd()
                                  -0.22066728558327908, 0.7668032045079851 };
 
     fparam.gprint_gd( coef_test, string( "gd1.png" ), band1 );
+    fparam.gprint_gd( coef_test, string( "gd2.png" ), band2 );
+    fparam.gprint_gd( coef_test, string( "gd3.png" ), band3 );
+    fparam.gprint_gd( coef_test, string( "gd4.png" ), band4 );
 }
