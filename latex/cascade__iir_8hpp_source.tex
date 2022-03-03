@@ -1,0 +1,367 @@
+\hypertarget{cascade__iir_8hpp_source}{}\doxysection{cascade\+\_\+iir.\+hpp}
+\label{cascade__iir_8hpp_source}\index{include/cascade\_iir.hpp@{include/cascade\_iir.hpp}}
+\mbox{\hyperlink{cascade__iir_8hpp}{\mbox{[}詳解\mbox{]}}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{6 }
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#ifndef FILTER\_PARAM\_HPP\_}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#define FILTER\_PARAM\_HPP\_}}
+\DoxyCodeLine{9 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_USE\_MATH\_DEFINES}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <cmath>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <complex>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <cstdio>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <cstdlib>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <ctime>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <fstream>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <functional>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include <random>}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include <regex>}}
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <sstream>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 \textcolor{keyword}{template}< \textcolor{keyword}{typename}... Args >}
+\DoxyCodeLine{27 std::string format( \textcolor{keyword}{const} std::string\&, Args... );}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29 }
+\DoxyCodeLine{33 \textcolor{keyword}{enum class} \mbox{\hyperlink{cascade__iir_8hpp_a7ef0ab496f57e183b484e62e2053c94f}{FilterType}}}
+\DoxyCodeLine{34 \{}
+\DoxyCodeLine{35     LPF,}
+\DoxyCodeLine{36     HPF,}
+\DoxyCodeLine{37     BPF,}
+\DoxyCodeLine{38     BEF,}
+\DoxyCodeLine{39     Other}
+\DoxyCodeLine{40 \};}
+\DoxyCodeLine{41 }
+\DoxyCodeLine{42 \textcolor{comment}{/* バンド(周波数帯域)の種別を示す列挙体}}
+\DoxyCodeLine{43 \textcolor{comment}{ *   Pass : 通過域}}
+\DoxyCodeLine{44 \textcolor{comment}{ *   Stop : 阻止域}}
+\DoxyCodeLine{45 \textcolor{comment}{ *   Transition : 遷移域}}
+\DoxyCodeLine{46 \textcolor{comment}{ */}}
+\DoxyCodeLine{47 \textcolor{keyword}{enum class} BandType}
+\DoxyCodeLine{48 \{}
+\DoxyCodeLine{49     Pass,}
+\DoxyCodeLine{50     Stop,}
+\DoxyCodeLine{51     Transition}
+\DoxyCodeLine{52 \};}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54 \textcolor{comment}{/* バンド(周波数帯域)の情報をまとめた構造体}}
+\DoxyCodeLine{55 \textcolor{comment}{ *   type : 帯域の種類(通過・阻止・遷移)}}
+\DoxyCodeLine{56 \textcolor{comment}{ *   left : 帯域の左端正規化周波数 [0:0.5)}}
+\DoxyCodeLine{57 \textcolor{comment}{ *   right : 帯域の右端正規化周波数 (0:0.5]}}
+\DoxyCodeLine{58 \textcolor{comment}{ *}}
+\DoxyCodeLine{59 \textcolor{comment}{ *   left < rightであること。それ以外の場合、エラー終了。}}
+\DoxyCodeLine{60 \textcolor{comment}{ */}}
+\DoxyCodeLine{61 \textcolor{keyword}{struct }\mbox{\hyperlink{struct_band_param}{BandParam}}}
+\DoxyCodeLine{62 \{}
+\DoxyCodeLine{63 \textcolor{keyword}{protected}:}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{65     BandType band\_type;}
+\DoxyCodeLine{66     \textcolor{keywordtype}{double} left\_side;}
+\DoxyCodeLine{67     \textcolor{keywordtype}{double} right\_side;}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{69 \textcolor{keyword}{public}:}
+\DoxyCodeLine{70 }
+\DoxyCodeLine{71     \mbox{\hyperlink{struct_band_param}{BandParam}}( BandType input\_type, \textcolor{keywordtype}{double} input\_left, \textcolor{keywordtype}{double} input\_right )}
+\DoxyCodeLine{72         : band\_type( input\_type ), left\_side( 0.0 ), right\_side( 0.0 )}
+\DoxyCodeLine{73     \{}
+\DoxyCodeLine{74         \textcolor{comment}{// バンドの条件に合わないとき、エラー終了}}
+\DoxyCodeLine{75         \textcolor{keywordflow}{if} ( input\_left < 0.0 || input\_left > input\_right || input\_right > 0.5 )}
+\DoxyCodeLine{76         \{}
+\DoxyCodeLine{77             fprintf(}
+\DoxyCodeLine{78                 stderr,}
+\DoxyCodeLine{79                 \textcolor{stringliteral}{"{}Error: [\%s l.\%d]Band edge is illegal(left :\%6.3f, right "{}}}
+\DoxyCodeLine{80                 \textcolor{stringliteral}{"{}:\%6.3f)\(\backslash\)n"{}},}
+\DoxyCodeLine{81                 \_\_FILE\_\_, \_\_LINE\_\_, input\_left, input\_right );}
+\DoxyCodeLine{82             exit( EXIT\_FAILURE );}
+\DoxyCodeLine{83         \}}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85         left\_side = input\_left;}
+\DoxyCodeLine{86         right\_side = input\_right;}
+\DoxyCodeLine{87     \}}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89     BandType type()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} band\_type; \}}
+\DoxyCodeLine{90     \textcolor{keywordtype}{double} left()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} left\_side; \}}
+\DoxyCodeLine{91     \textcolor{keywordtype}{double} right()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} right\_side; \}}
+\DoxyCodeLine{92     \textcolor{keywordtype}{double} width()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} right\_side -\/ left\_side; \}}
+\DoxyCodeLine{93     std::string sprint();}
+\DoxyCodeLine{94 \};}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96 \textcolor{keyword}{namespace }filter}
+\DoxyCodeLine{97 \{}
+\DoxyCodeLine{98     \textcolor{keyword}{namespace }iir}
+\DoxyCodeLine{99     \{}
+\DoxyCodeLine{100         \textcolor{keyword}{struct }\mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}}
+\DoxyCodeLine{101         \{}
+\DoxyCodeLine{102         \textcolor{keyword}{protected}:}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104             \textcolor{comment}{// フィルタパラメータ}}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} n\_order;}
+\DoxyCodeLine{107             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} m\_order;}
+\DoxyCodeLine{108             std::vector< BandParam > bands;}
+\DoxyCodeLine{109             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nsplit\_approx;}
+\DoxyCodeLine{110             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nsplit\_transition;}
+\DoxyCodeLine{111             \textcolor{keywordtype}{double} group\_delay;}
+\DoxyCodeLine{112             \textcolor{keywordtype}{double} threshold\_riple;}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{114             \textcolor{comment}{// 内部パラメータ}}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{117                 csw;    \textcolor{comment}{// 複素正弦波e\string^-\/jωを周波数帯域別に格納}}
+\DoxyCodeLine{118             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{119                 csw2;    \textcolor{comment}{// 複素正弦波e\string^-\/j2ωを周波数帯域別に格納}}
+\DoxyCodeLine{120             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{121                 desire\_res;    \textcolor{comment}{// 所望特性の周波数特性}}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123             std::function< std::vector< std::vector< std::complex< double > > >(}
+\DoxyCodeLine{124                 \textcolor{keyword}{const} \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}*, \textcolor{keyword}{const} std::vector< double >\& ) >}
+\DoxyCodeLine{125                 freq\_res\_func;}
+\DoxyCodeLine{126             std::function< std::vector< std::vector< double > >(}
+\DoxyCodeLine{127                 \textcolor{keyword}{const} \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}*, \textcolor{keyword}{const} std::vector< double >\& ) >}
+\DoxyCodeLine{128                 group\_delay\_func;}
+\DoxyCodeLine{129             std::function< double(}
+\DoxyCodeLine{130                 \textcolor{keyword}{const} \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}*, \textcolor{keyword}{const} std::vector< double >\& ) >}
+\DoxyCodeLine{131                 stability\_func;}
+\DoxyCodeLine{132 }
+\DoxyCodeLine{133             \textcolor{comment}{// 内部メソッド}}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135             \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}()}
+\DoxyCodeLine{136                 : n\_order( 0 ), m\_order( 0 ), nsplit\_approx( 0 ),}
+\DoxyCodeLine{137                   nsplit\_transition( 0 ), group\_delay( 0.0 ),}
+\DoxyCodeLine{138                   threshold\_riple( 1.0 )}
+\DoxyCodeLine{139             \{\}}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{142             freq\_res\_se( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{143             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{144             freq\_res\_so( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{145             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{146             freq\_res\_no( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{147             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{148             freq\_res\_mo( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150             std::vector< std::vector< double > >}
+\DoxyCodeLine{151             group\_delay\_se( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{152             std::vector< std::vector< double > >}
+\DoxyCodeLine{153             group\_delay\_so( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{154             std::vector< std::vector< double > >}
+\DoxyCodeLine{155             group\_delay\_no( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{156             std::vector< std::vector< double > >}
+\DoxyCodeLine{157             group\_delay\_mo( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{158 }
+\DoxyCodeLine{159             \textcolor{keywordtype}{double} judge\_stability\_even( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{160             \textcolor{keywordtype}{double} judge\_stability\_odd( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162         \textcolor{keyword}{public}:}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164             \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}(}
+\DoxyCodeLine{165                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{166                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{167                 \mbox{\hyperlink{struct_band_param}{BandParam}},}
+\DoxyCodeLine{168                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{169                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{170                 \textcolor{keywordtype}{double} );}
+\DoxyCodeLine{171             \mbox{\hyperlink{structfilter_1_1iir_1_1_filter_param}{FilterParam}}(}
+\DoxyCodeLine{172                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{173                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{174                 std::vector< BandParam >,}
+\DoxyCodeLine{175                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{176                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int},}
+\DoxyCodeLine{177                 \textcolor{keywordtype}{double} );}
+\DoxyCodeLine{178 }
+\DoxyCodeLine{179             \textcolor{comment}{// get function}}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{181             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} pole\_order()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_order; \}}
+\DoxyCodeLine{182             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} zero\_order()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} n\_order; \}}
+\DoxyCodeLine{183             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} opt\_order()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} 1 + n\_order + m\_order; \}}
+\DoxyCodeLine{184             std::vector< BandParam > fbands()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} bands; \}}
+\DoxyCodeLine{185             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} partition\_approx()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} nsplit\_approx; \}}
+\DoxyCodeLine{186             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} partition\_transition()\textcolor{keyword}{ const}}
+\DoxyCodeLine{187 \textcolor{keyword}{            }\{}
+\DoxyCodeLine{188                 \textcolor{keywordflow}{return} nsplit\_transition;}
+\DoxyCodeLine{189             \}}
+\DoxyCodeLine{190             \textcolor{keywordtype}{double} gd()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} group\_delay; \}}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{192             \textcolor{comment}{// set function}}
+\DoxyCodeLine{193             \textcolor{comment}{/* \# フィルタ構造体}}
+\DoxyCodeLine{194 \textcolor{comment}{             *   振幅隆起として検知する閾値を変更する}}
+\DoxyCodeLine{195 \textcolor{comment}{             *   デフォルト値は1.0}}
+\DoxyCodeLine{196 \textcolor{comment}{             */}}
+\DoxyCodeLine{197             \textcolor{keywordtype}{void} set\_threshold\_riple( \textcolor{keywordtype}{double} input )}
+\DoxyCodeLine{198             \{}
+\DoxyCodeLine{199                 threshold\_riple = input;}
+\DoxyCodeLine{200             \}}
+\DoxyCodeLine{201 }
+\DoxyCodeLine{202             \textcolor{comment}{// normal function}}
+\DoxyCodeLine{203             \textcolor{comment}{/* \# フィルタ構造体}}
+\DoxyCodeLine{204 \textcolor{comment}{             *   周波数特性計算関数}}
+\DoxyCodeLine{205 \textcolor{comment}{             *   コンストラクタに与えられた周波数帯域に}}
+\DoxyCodeLine{206 \textcolor{comment}{             *   応じて，縦続型IIRフィルタの周波数特性を計算する}}
+\DoxyCodeLine{207 \textcolor{comment}{             *   また，係数列も次数によって適宜分割される}}
+\DoxyCodeLine{208 \textcolor{comment}{             *}}
+\DoxyCodeLine{209 \textcolor{comment}{             *   \# 引数}}
+\DoxyCodeLine{210 \textcolor{comment}{             *   vector<double> coef : 係数列(a0, a1, a2[0], a2[1],..., b1,}}
+\DoxyCodeLine{211 \textcolor{comment}{             * b2[0], b2[1],...) \#返り値 vector<vector<complex<double>>>}}
+\DoxyCodeLine{212 \textcolor{comment}{             * response : 周波数帯域-\/周波数分割数の2重配列}}
+\DoxyCodeLine{213 \textcolor{comment}{             */}}
+\DoxyCodeLine{214             std::vector< std::vector< std::complex< double > > >}
+\DoxyCodeLine{215             freq\_res( \textcolor{keyword}{const} std::vector< double >\& coef )\textcolor{keyword}{ const}}
+\DoxyCodeLine{216 \textcolor{keyword}{            }\{}
+\DoxyCodeLine{217                 \textcolor{keywordflow}{return} this-\/>freq\_res\_func( \textcolor{keyword}{this}, coef );}
+\DoxyCodeLine{218             \}}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{220             \textcolor{comment}{/* \# フィルタ構造体}}
+\DoxyCodeLine{221 \textcolor{comment}{             *   群遅延特性計算関数}}
+\DoxyCodeLine{222 \textcolor{comment}{             *   コンストラクタに与えられた周波数帯域に}}
+\DoxyCodeLine{223 \textcolor{comment}{             *   応じて，縦続型IIRフィルタの群遅延特性を計算する}}
+\DoxyCodeLine{224 \textcolor{comment}{             *   また，係数列も次数によって適宜分割される}}
+\DoxyCodeLine{225 \textcolor{comment}{             *}}
+\DoxyCodeLine{226 \textcolor{comment}{             *   \# 引数}}
+\DoxyCodeLine{227 \textcolor{comment}{             *   vector<double> coef : 係数列(a0, a1, a2[0], a2[1],..., b1,}}
+\DoxyCodeLine{228 \textcolor{comment}{             * b2[0], b2[1],...) \#返り値 vector<vector<double>> response :}}
+\DoxyCodeLine{229 \textcolor{comment}{             * 周波数帯域-\/周波数分割数の2重配列}}
+\DoxyCodeLine{230 \textcolor{comment}{             */}}
+\DoxyCodeLine{231             std::vector< std::vector< double > >}
+\DoxyCodeLine{232             group\_delay\_res( \textcolor{keyword}{const} std::vector< double >\& coef )\textcolor{keyword}{ const}}
+\DoxyCodeLine{233 \textcolor{keyword}{            }\{}
+\DoxyCodeLine{234                 \textcolor{keywordflow}{return} this-\/>group\_delay\_func( \textcolor{keyword}{this}, coef );}
+\DoxyCodeLine{235             \}}
+\DoxyCodeLine{236 }
+\DoxyCodeLine{237             \textcolor{comment}{/* \# フィルタ構造体}}
+\DoxyCodeLine{238 \textcolor{comment}{             *   安定性判別関数}}
+\DoxyCodeLine{239 \textcolor{comment}{             *}}
+\DoxyCodeLine{240 \textcolor{comment}{             *   \# 引数}}
+\DoxyCodeLine{241 \textcolor{comment}{             *   vector<double> coef : 係数列(a0, a1, a2[0], a2[1],..., b1,}}
+\DoxyCodeLine{242 \textcolor{comment}{             * b2[0], b2[1],...) \#返り値 double response : 安定性のペナルティ}}
+\DoxyCodeLine{243 \textcolor{comment}{             *                         0の場合に安定性を満たす}}
+\DoxyCodeLine{244 \textcolor{comment}{             */}}
+\DoxyCodeLine{245             \textcolor{keywordtype}{double} judge\_stability( \textcolor{keyword}{const} std::vector< double >\& coef )\textcolor{keyword}{ const}}
+\DoxyCodeLine{246 \textcolor{keyword}{            }\{}
+\DoxyCodeLine{247                 \textcolor{keywordflow}{return} this-\/>stability\_func( \textcolor{keyword}{this}, coef );}
+\DoxyCodeLine{248             \}}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250             \textcolor{keywordtype}{double} evaluate( \textcolor{keyword}{const} std::vector< double >\& ) \textcolor{keyword}{const};}
+\DoxyCodeLine{251             std::vector< double >}
+\DoxyCodeLine{252             init\_coef( \textcolor{keyword}{const} \textcolor{keywordtype}{double}, \textcolor{keyword}{const} \textcolor{keywordtype}{double}, \textcolor{keyword}{const} \textcolor{keywordtype}{double} ) \textcolor{keyword}{const};}
+\DoxyCodeLine{253             std::vector< double >}
+\DoxyCodeLine{254             init\_stable\_coef( \textcolor{keyword}{const} \textcolor{keywordtype}{double}, \textcolor{keyword}{const} \textcolor{keywordtype}{double} ) \textcolor{keyword}{const};}
+\DoxyCodeLine{255 }
+\DoxyCodeLine{256             \textcolor{keywordtype}{void} gprint\_amp(}
+\DoxyCodeLine{257                 \textcolor{keyword}{const} std::vector< double >\&,}
+\DoxyCodeLine{258                 \textcolor{keyword}{const} std::string\&,}
+\DoxyCodeLine{259                 \textcolor{keyword}{const} \textcolor{keywordtype}{double},}
+\DoxyCodeLine{260                 \textcolor{keyword}{const} \textcolor{keywordtype}{double} ) \textcolor{keyword}{const};}
+\DoxyCodeLine{261             \textcolor{keywordtype}{void} gprint\_mag(}
+\DoxyCodeLine{262                 \textcolor{keyword}{const} std::vector< double >\&,}
+\DoxyCodeLine{263                 \textcolor{keyword}{const} std::string\&,}
+\DoxyCodeLine{264                 \textcolor{keyword}{const} \textcolor{keywordtype}{double},}
+\DoxyCodeLine{265                 \textcolor{keyword}{const} \textcolor{keywordtype}{double} ) \textcolor{keyword}{const};}
+\DoxyCodeLine{266 }
+\DoxyCodeLine{267             \textcolor{comment}{// static function}}
+\DoxyCodeLine{268 }
+\DoxyCodeLine{269             \textcolor{keyword}{static} std::vector< FilterParam > read\_csv( std::string\& );}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271             \textcolor{keyword}{template}< \textcolor{keyword}{typename}... Args >}
+\DoxyCodeLine{272             \textcolor{keyword}{static} std::vector< BandParam > gen\_bands( \mbox{\hyperlink{cascade__iir_8hpp_a7ef0ab496f57e183b484e62e2053c94f}{FilterType}}, Args... );}
+\DoxyCodeLine{273             \textcolor{keyword}{static} \mbox{\hyperlink{cascade__iir_8hpp_a7ef0ab496f57e183b484e62e2053c94f}{FilterType}} analyze\_type( \textcolor{keyword}{const} std::string\& );}
+\DoxyCodeLine{274             \textcolor{keyword}{static} std::vector< double > analyze\_edges( \textcolor{keyword}{const} std::string\& );}
+\DoxyCodeLine{275             \textcolor{keyword}{static} std::vector< std::complex< double > >}
+\DoxyCodeLine{276             gen\_csw( \textcolor{keyword}{const} \mbox{\hyperlink{struct_band_param}{BandParam}}\&, \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} );}
+\DoxyCodeLine{277             \textcolor{keyword}{static} std::vector< std::complex< double > >}
+\DoxyCodeLine{278             gen\_csw2( \textcolor{keyword}{const} \mbox{\hyperlink{struct_band_param}{BandParam}}\&, \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} );}
+\DoxyCodeLine{279             \textcolor{keyword}{static} std::vector< std::complex< double > > gen\_desire\_res(}
+\DoxyCodeLine{280                 \textcolor{keyword}{const} \mbox{\hyperlink{struct_band_param}{BandParam}}\&, \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}, \textcolor{keyword}{const} \textcolor{keywordtype}{double} );}
+\DoxyCodeLine{281         \};}
+\DoxyCodeLine{282 }
+\DoxyCodeLine{283     \}    \textcolor{comment}{// namespace iir}}
+\DoxyCodeLine{284 \}    \textcolor{comment}{// namespace filter}}
+\DoxyCodeLine{285 }
+\DoxyCodeLine{286 }
+\DoxyCodeLine{287 \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/template function-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{288 \textcolor{comment}{/* \# String format function}}
+\DoxyCodeLine{289 \textcolor{comment}{ *}}
+\DoxyCodeLine{290 \textcolor{comment}{ */}}
+\DoxyCodeLine{291 \textcolor{keyword}{template}< \textcolor{keyword}{typename}... Args >}
+\DoxyCodeLine{292 std::string format( \textcolor{keyword}{const} std::string\& fmt, Args... args )}
+\DoxyCodeLine{293 \{}
+\DoxyCodeLine{294     std::size\_t len = \textcolor{keyword}{static\_cast<} std::size\_t \textcolor{keyword}{>}(}
+\DoxyCodeLine{295         snprintf( \textcolor{keyword}{nullptr}, 0, fmt.c\_str(), args... ) );}
+\DoxyCodeLine{296     std::vector< char > buf( len + 1 );}
+\DoxyCodeLine{297     snprintf( \&buf[0], len + 1, fmt.c\_str(), args... );}
+\DoxyCodeLine{298     \textcolor{keywordflow}{return} std::string( \&buf[0], \&buf[0] + len );}
+\DoxyCodeLine{299 \}}
+\DoxyCodeLine{300 }
+\DoxyCodeLine{301 \textcolor{comment}{/* \# フィルタ構造体}}
+\DoxyCodeLine{302 \textcolor{comment}{ *   フィルタのタイプと周波数帯域端により，}}
+\DoxyCodeLine{303 \textcolor{comment}{ *   連続した周波数帯域の配列を生成する}}
+\DoxyCodeLine{304 \textcolor{comment}{ *}}
+\DoxyCodeLine{305 \textcolor{comment}{ * \# 引数}}
+\DoxyCodeLine{306 \textcolor{comment}{ * FilterType ftype : フィルタタイプ(L.P.F.やH.P.F.など)}}
+\DoxyCodeLine{307 \textcolor{comment}{ * Args... edges : doubleの可変長引数を想定}}
+\DoxyCodeLine{308 \textcolor{comment}{ *                   フィルタタイプに合わない帯域端，}}
+\DoxyCodeLine{309 \textcolor{comment}{ *                   フィルタタイプが`Other`の場合には，}}
+\DoxyCodeLine{310 \textcolor{comment}{ *                   異常終了する}}
+\DoxyCodeLine{311 \textcolor{comment}{ * \# 返り値}}
+\DoxyCodeLine{312 \textcolor{comment}{ * vector<BandParam> bands : 連続した周波数帯域の配列}}
+\DoxyCodeLine{313 \textcolor{comment}{ */}}
+\DoxyCodeLine{314 \textcolor{keyword}{template}< \textcolor{keyword}{typename}... Args >}
+\DoxyCodeLine{315 std::vector< BandParam >}
+\DoxyCodeLine{316 filter::iir::FilterParam::gen\_bands( \mbox{\hyperlink{cascade__iir_8hpp_a7ef0ab496f57e183b484e62e2053c94f}{FilterType}} ftype, Args... edges )}
+\DoxyCodeLine{317 \{}
+\DoxyCodeLine{318     std::vector< BandParam > bands;}
+\DoxyCodeLine{319 }
+\DoxyCodeLine{320     \textcolor{keywordflow}{switch} ( ftype )}
+\DoxyCodeLine{321     \{}
+\DoxyCodeLine{322         \textcolor{keywordflow}{case} FilterType::LPF:}
+\DoxyCodeLine{323             \{}
+\DoxyCodeLine{324                 \textcolor{keywordtype}{int} nedge = \textcolor{keyword}{sizeof}...( edges );}
+\DoxyCodeLine{325                 \textcolor{keywordflow}{if} ( nedge != 2 )}
+\DoxyCodeLine{326                 \{}
+\DoxyCodeLine{327                     fprintf(}
+\DoxyCodeLine{328                         stderr,}
+\DoxyCodeLine{329                         \textcolor{stringliteral}{"{}Error: [\%s l.\%d]It has not been implement yet.\(\backslash\)n"{}},}
+\DoxyCodeLine{330                         \_\_FILE\_\_, \_\_LINE\_\_ );}
+\DoxyCodeLine{331                     exit( EXIT\_FAILURE );}
+\DoxyCodeLine{332                 \}}
+\DoxyCodeLine{333 }
+\DoxyCodeLine{334                 \textcolor{keywordtype}{double} edge[] = \{ edges... \};}
+\DoxyCodeLine{335                 bands.emplace\_back( \mbox{\hyperlink{struct_band_param}{BandParam}}( BandType::Pass, 0.0, edge[0] ) );}
+\DoxyCodeLine{336                 bands.emplace\_back(}
+\DoxyCodeLine{337                     \mbox{\hyperlink{struct_band_param}{BandParam}}( BandType::Transition, edge[0], edge[1] ) );}
+\DoxyCodeLine{338                 bands.emplace\_back( \mbox{\hyperlink{struct_band_param}{BandParam}}( BandType::Stop, edge[1], 0.5 ) );}
+\DoxyCodeLine{339                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{340             \}}
+\DoxyCodeLine{341         \textcolor{keywordflow}{case} FilterType::Other:}
+\DoxyCodeLine{342             \{}
+\DoxyCodeLine{343                 fprintf(}
+\DoxyCodeLine{344                     stderr,}
+\DoxyCodeLine{345                     \textcolor{stringliteral}{"{}Error: [\%s l.\%d]Other type filter can't use this "{}}}
+\DoxyCodeLine{346                     \textcolor{stringliteral}{"{}function. "{}}}
+\DoxyCodeLine{347                     \textcolor{stringliteral}{"{}Please, make `vector<BandParam>` your self.\(\backslash\)n"{}},}
+\DoxyCodeLine{348                     \_\_FILE\_\_, \_\_LINE\_\_ );}
+\DoxyCodeLine{349                 exit( EXIT\_FAILURE );}
+\DoxyCodeLine{350                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{351             \}}
+\DoxyCodeLine{352         \textcolor{keywordflow}{case} FilterType::HPF:}
+\DoxyCodeLine{353         \textcolor{keywordflow}{case} FilterType::BPF:}
+\DoxyCodeLine{354         \textcolor{keywordflow}{case} FilterType::BEF:}
+\DoxyCodeLine{355         \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{356             \{}
+\DoxyCodeLine{357                 fprintf(}
+\DoxyCodeLine{358                     stderr, \textcolor{stringliteral}{"{}Error: [\%s l.\%d]It has not been implement yet.\(\backslash\)n"{}},}
+\DoxyCodeLine{359                     \_\_FILE\_\_, \_\_LINE\_\_ );}
+\DoxyCodeLine{360                 exit( EXIT\_FAILURE );}
+\DoxyCodeLine{361                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{362             \}}
+\DoxyCodeLine{363     \}}
+\DoxyCodeLine{364 }
+\DoxyCodeLine{365     \textcolor{keywordflow}{return} bands;}
+\DoxyCodeLine{366 \}}
+\DoxyCodeLine{367 }
+\DoxyCodeLine{368 \textcolor{preprocessor}{\#endif }\textcolor{comment}{/* FILTER\_PARAM\_HPP\_ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}
