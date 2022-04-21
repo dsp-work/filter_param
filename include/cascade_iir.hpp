@@ -133,8 +133,8 @@ namespace filter
                 const FilterParam*, const std::vector< double >& ) >
                 stability_func;
 
-            std::function< std::vector<std::complex<double>>(const FilterParam*, const std::vector<double>&) > pole_func;
-            std::function< std::vector<std::complex<double>>(const FilterParam*, const std::vector<double>&) > zero_func;
+            std::function< std::vector< std::complex< double > >( const FilterParam*, const std::vector< double >& ) > pole_func;
+            std::function< std::vector< std::complex< double > >( const FilterParam*, const std::vector< double >& ) > zero_func;
 
 
             // 内部メソッド
@@ -166,10 +166,10 @@ namespace filter
             double judge_stability_even( const std::vector< double >& ) const;
             double judge_stability_odd( const std::vector< double >& ) const;
 
-            std::vector<std::complex<double>> pole_even(const std::vector<double>&) const;
-            std::vector<std::complex<double>> pole_odd(const std::vector<double>&) const;
-            std::vector<std::complex<double>> zero_even(const std::vector<double>&) const;
-            std::vector<std::complex<double>> zero_odd(const std::vector<double>&) const;
+            std::vector< std::complex< double > > pole_even( const std::vector< double >& ) const;
+            std::vector< std::complex< double > > pole_odd( const std::vector< double >& ) const;
+            std::vector< std::complex< double > > zero_even( const std::vector< double >& ) const;
+            std::vector< std::complex< double > > zero_odd( const std::vector< double >& ) const;
 
 
         public:
@@ -268,10 +268,12 @@ namespace filter
              *   #返り値
              *   vector<complex<double>> response : 極の値の配列
              */
-            std::vector<std::complex<double>> pole_res(const std::vector<double>& coef) const
-            { return this->pole_func(this, coef); }
+            std::vector< std::complex< double > > pole_res( const std::vector< double >& coef ) const
+            {
+                return this->pole_func( this, coef );
+            }
 
-             /* # フィルタ構造体
+            /* # フィルタ構造体
              *   零点計算関数
              *
              *   # 引数
@@ -279,8 +281,10 @@ namespace filter
              *   #返り値
              *   vector<complex<double>> response : 零点の値の配列
              */
-            std::vector<std::complex<double>> zero_res(const std::vector<double>& coef) const
-            { return this->zero_func(this, coef); }
+            std::vector< std::complex< double > > zero_res( const std::vector< double >& coef ) const
+            {
+                return this->zero_func( this, coef );
+            }
 
             double evaluate( const std::vector< double >& ) const;
             std::vector< double >

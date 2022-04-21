@@ -1352,165 +1352,165 @@ namespace filter
 
             pclose( gp );
         }
-        
 
-/* # フィルタ構造体
- *   分母の係数列から極、分子の係数列から零点の計算を係数列数が奇数の場合と偶数の場合で行う
- *   さらに判別式の値から複素解・実数解・重解の予想される出現頻度順に場合分けを行う
- *
- * # 引数
- * vector<double>& coef : 係数列
- * # 返り値
- * vector<complex<double>> pole : 極の計算結果の配列
- * vector<complex<double>> zero : 零点の計算結果の配列
- * 
- */
-std::vector<std::complex<double>> FilterParam::pole_even(const std::vector<double>& coef) const
-{
-	using std::complex;
-	using std::sqrt;
-	using std::abs; // c++でdouble型でも使用可能
 
-	const double acc = 1.0e-10; // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+        /* # フィルタ構造体
+         *   分母の係数列から極、分子の係数列から零点の計算を係数列数が奇数の場合と偶数の場合で行う
+         *   さらに判別式の値から複素解・実数解・重解の予想される出現頻度順に場合分けを行う
+         *
+         * # 引数
+         * vector<double>& coef : 係数列
+         * # 返り値
+         * vector<complex<double>> pole : 極の計算結果の配列
+         * vector<complex<double>> zero : 零点の計算結果の配列
+         *
+         */
+        std::vector< std::complex< double > > FilterParam::pole_even( const std::vector< double >& coef ) const
+        {
+            using std::abs;    // c++でdouble型でも使用可能
+            using std::complex;
+            using std::sqrt;
 
-	std::vector<complex<double>> pole;
-		pole.reserve(2*m_order);
+            constexpr double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
 
-	for(unsigned int m = n_order + 1; m < opt_order(); m += 2)
-	{
-		double disc = coef.at(m)*coef.at(m) - 4.0*coef.at(m+1);
-		
-		if(disc < -acc) // 複素解
-		{	
-			pole.emplace_back(complex<double>(-0.5*coef.at(m), 0.5*sqrt(abs(disc)))); // plus_pole
-			pole.emplace_back(conj(pole.back())); // minus_pole
-		}
-		else if(disc > acc) // 実数解
-		{
-			double disc_sqrt = sqrt(disc);
-			pole.emplace_back(complex<double>(0.5*(-coef.at(m) + disc_sqrt), 0.0)); // plus_pole
-			pole.emplace_back(complex<double>(0.5*(-coef.at(m) - disc_sqrt), 0.0)); // minus_pole
-		}
-		else // 重解
-		{
-			pole.emplace_back(complex<double>(-0.5*coef.at(m), 0.0)); // multiple_pole
-		}
-	}
+            std::vector< complex< double > > pole;
+            pole.reserve( 2 * m_order );
 
-	return pole;
-}
+            for ( unsigned int m = n_order + 1; m < opt_order(); m += 2 )
+            {
+                double disc = coef.at( m ) * coef.at( m ) - 4.0 * coef.at( m + 1 );
 
-std::vector<std::complex<double>> FilterParam::pole_odd(const std::vector<double>& coef) const
-{
-	using std::complex;
-	using std::sqrt;
-	using std::abs; // c++でdouble型でも使用可能
+                if ( disc < -acc )    // 複素解
+                {
+                    pole.emplace_back( complex< double >( -0.5 * coef.at( m ), 0.5 * sqrt( abs( disc ) ) ) );    // plus_pole
+                    pole.emplace_back( conj( pole.back() ) );                                                    // minus_pole
+                }
+                else if ( disc > acc )    // 実数解
+                {
+                    double disc_sqrt = sqrt( disc );
+                    pole.emplace_back( complex< double >( 0.5 * ( -coef.at( m ) + disc_sqrt ), 0.0 ) );    // plus_pole
+                    pole.emplace_back( complex< double >( 0.5 * ( -coef.at( m ) - disc_sqrt ), 0.0 ) );    // minus_pole
+                }
+                else    // 重解
+                {
+                    pole.emplace_back( complex< double >( -0.5 * coef.at( m ), 0.0 ) );    // multiple_pole
+                }
+            }
 
-	const double acc = 1.0e-10; // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+            return pole;
+        }
 
-	std::vector<complex<double>> pole;
-		pole.reserve(2*m_order + 1);
+        std::vector< std::complex< double > > FilterParam::pole_odd( const std::vector< double >& coef ) const
+        {
+            using std::abs;    // c++でdouble型でも使用可能
+            using std::complex;
+            using std::sqrt;
 
-	pole.emplace_back(-coef.at(n_order + 1));
+            const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
 
-	for(unsigned int m = n_order + 2; m < opt_order(); m += 2)
-	{
-		double disc = coef.at(m)*coef.at(m) - 4*coef.at(m+1);
+            std::vector< complex< double > > pole;
+            pole.reserve( 2 * m_order + 1 );
 
-		if(disc < -acc) // 複素解
-		{	
-			pole.emplace_back(complex<double>(-0.5*coef.at(m), 0.5*sqrt(abs(disc)))); // plus_pole
-			pole.emplace_back(conj(pole.back())); // minus_pole
-		}
-		else if(disc > acc) // 実数解
-		{
-			double disc_sqrt = sqrt(disc);
-			pole.emplace_back(complex<double>(0.5*(-coef.at(m) + disc_sqrt), 0.0)); // plus_pole
-			pole.emplace_back(complex<double>(0.5*(-coef.at(m) - disc_sqrt), 0.0)); // minus_pole
-		}
-		else // 重解
-		{
-			pole.emplace_back(complex<double>(-0.5*coef.at(m), 0.0)); // multiple_pole
-		}
-	}
+            pole.emplace_back( -coef.at( n_order + 1 ) );
 
-	return pole;
-}
+            for ( unsigned int m = n_order + 2; m < opt_order(); m += 2 )
+            {
+                double disc = coef.at( m ) * coef.at( m ) - 4 * coef.at( m + 1 );
 
-std::vector<std::complex<double>> FilterParam::zero_even(const std::vector<double>& coef) const
-{
-	using std::complex;
-	using std::sqrt;
-	using std::abs; // c++でdouble型でも使用可能
+                if ( disc < -acc )    // 複素解
+                {
+                    pole.emplace_back( complex< double >( -0.5 * coef.at( m ), 0.5 * sqrt( abs( disc ) ) ) );    // plus_pole
+                    pole.emplace_back( conj( pole.back() ) );                                                    // minus_pole
+                }
+                else if ( disc > acc )    // 実数解
+                {
+                    double disc_sqrt = sqrt( disc );
+                    pole.emplace_back( complex< double >( 0.5 * ( -coef.at( m ) + disc_sqrt ), 0.0 ) );    // plus_pole
+                    pole.emplace_back( complex< double >( 0.5 * ( -coef.at( m ) - disc_sqrt ), 0.0 ) );    // minus_pole
+                }
+                else    // 重解
+                {
+                    pole.emplace_back( complex< double >( -0.5 * coef.at( m ), 0.0 ) );    // multiple_pole
+                }
+            }
 
-	const double acc = 1.0e-10; // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+            return pole;
+        }
 
-	std::vector<complex<double>> zero;
-		zero.reserve(2*n_order);
+        std::vector< std::complex< double > > FilterParam::zero_even( const std::vector< double >& coef ) const
+        {
+            using std::abs;    // c++でdouble型でも使用可能
+            using std::complex;
+            using std::sqrt;
 
-	for(unsigned int n = 1; n < n_order; n += 2)
-	{
-		double disc = coef.at(n)*coef.at(n) - 4*coef.at(n+1);
+            const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
 
-		if(disc < -acc) // 複素解
-		{	
-			zero.emplace_back(complex<double>(-0.5*coef.at(n), 0.5*sqrt(abs(disc)))); // plus_zero
-			zero.emplace_back(conj(zero.back())); // minus_zero
-		}
-		else if(disc > acc) // 実数解
-		{
-			double disc_sqrt = sqrt(disc);
-			zero.emplace_back(complex<double>(0.5*(-coef.at(n) + disc_sqrt), 0.0)); // plus_zero
-			zero.emplace_back(complex<double>(0.5*(-coef.at(n) - disc_sqrt), 0.0)); // minus_zero
-		}
-		else // 重解
-		{
-			zero.emplace_back(complex<double>(-0.5*coef.at(n), 0.0)); // multiple_zero
-		}
-	}
+            std::vector< complex< double > > zero;
+            zero.reserve( 2 * n_order );
 
-	return zero;	
-}
+            for ( unsigned int n = 1; n < n_order; n += 2 )
+            {
+                double disc = coef.at( n ) * coef.at( n ) - 4 * coef.at( n + 1 );
 
-std::vector<std::complex<double>> FilterParam::zero_odd(const std::vector<double>& coef) const
-{
-	using std::complex;
-	using std::sqrt;
-	using std::abs; // c++でdouble型でも使用可能
+                if ( disc < -acc )    // 複素解
+                {
+                    zero.emplace_back( complex< double >( -0.5 * coef.at( n ), 0.5 * sqrt( abs( disc ) ) ) );    // plus_zero
+                    zero.emplace_back( conj( zero.back() ) );                                                    // minus_zero
+                }
+                else if ( disc > acc )    // 実数解
+                {
+                    double disc_sqrt = sqrt( disc );
+                    zero.emplace_back( complex< double >( 0.5 * ( -coef.at( n ) + disc_sqrt ), 0.0 ) );    // plus_zero
+                    zero.emplace_back( complex< double >( 0.5 * ( -coef.at( n ) - disc_sqrt ), 0.0 ) );    // minus_zero
+                }
+                else    // 重解
+                {
+                    zero.emplace_back( complex< double >( -0.5 * coef.at( n ), 0.0 ) );    // multiple_zero
+                }
+            }
 
-	const double acc = 1.0e-10; // 1.0×10^-10≒0とし、これを基準に場合分けを行う
+            return zero;
+        }
 
-	std::vector<complex<double>> zero;
-		zero.reserve(2*n_order + 1);
+        std::vector< std::complex< double > > FilterParam::zero_odd( const std::vector< double >& coef ) const
+        {
+            using std::abs;    // c++でdouble型でも使用可能
+            using std::complex;
+            using std::sqrt;
 
-	zero.emplace_back(-coef.at(1));
-	
-	for(unsigned int n = 2; n < n_order; n += 2)
-	{
-		double disc = coef.at(n)*coef.at(n) - 4*coef.at(n+1);
+            const double acc = 1.0e-10;    // 1.0×10^-10≒0とし、これを基準に場合分けを行う
 
-		if(disc < -acc) // 複素解
-		{	
-			zero.emplace_back(complex<double>(-0.5*coef.at(n), 0.5*sqrt(abs(disc)))); // plus_zero
-			zero.emplace_back(conj(zero.back())); // minus_zero
-		}
-		else if(disc > acc) // 実数解
-		{
-			double disc_sqrt = sqrt(disc);
-			zero.emplace_back(complex<double>(0.5*(-coef.at(n) + disc_sqrt), 0.0)); // plus_zero
-			zero.emplace_back(complex<double>(0.5*(-coef.at(n) - disc_sqrt), 0.0)); // minus_zero
-		}
-		else // 重解
-		{
-			zero.emplace_back(complex<double>(-0.5*coef.at(n), 0.0)); // multiple_zero
-		}
-	}
+            std::vector< complex< double > > zero;
+            zero.reserve( 2 * n_order + 1 );
 
-	return zero;
-}
+            zero.emplace_back( -coef.at( 1 ) );
 
-} // namespace iir
-} // namespace filter
+            for ( unsigned int n = 2; n < n_order; n += 2 )
+            {
+                double disc = coef.at( n ) * coef.at( n ) - 4 * coef.at( n + 1 );
+
+                if ( disc < -acc )    // 複素解
+                {
+                    zero.emplace_back( complex< double >( -0.5 * coef.at( n ), 0.5 * sqrt( abs( disc ) ) ) );    // plus_zero
+                    zero.emplace_back( conj( zero.back() ) );                                                    // minus_zero
+                }
+                else if ( disc > acc )    // 実数解
+                {
+                    double disc_sqrt = sqrt( disc );
+                    zero.emplace_back( complex< double >( 0.5 * ( -coef.at( n ) + disc_sqrt ), 0.0 ) );    // plus_zero
+                    zero.emplace_back( complex< double >( 0.5 * ( -coef.at( n ) - disc_sqrt ), 0.0 ) );    // minus_zero
+                }
+                else    // 重解
+                {
+                    zero.emplace_back( complex< double >( -0.5 * coef.at( n ), 0.0 ) );    // multiple_zero
+                }
+            }
+
+            return zero;
+        }
+
+    }    // namespace iir
+}    // namespace filter
 
 std::string BandParam::sprint()
 {
