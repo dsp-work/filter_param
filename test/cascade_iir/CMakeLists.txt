@@ -38,6 +38,24 @@ add_test(
         )
 
 add_test(
+    NAME cascade-iir-FilterParam_new_single_band
+    COMMAND $<TARGET_FILE:cascade-iir-test> FilterParam_new_single_band
+    )
+    set_property(
+        TEST cascade-iir-FilterParam_new_single_band
+        PROPERTY LABELS lib cscade-iir cascade-iir-FilterParam_new_single_band
+        )
+
+add_test(
+    NAME cascade-iir-FilterParam_new_multi_band
+    COMMAND $<TARGET_FILE:cascade-iir-test> FilterParam_new_multi_band
+    )
+    set_property(
+        TEST cascade-iir-FilterParam_new_multi_band
+        PROPERTY LABELS lib cscade-iir cascade-iir-FilterParam_new_multi_band
+        )
+
+add_test(
     NAME cascade-iir-FilterParam_read_csv
     COMMAND $<TARGET_FILE:cascade-iir-test> FilterParam_read_csv
     )
