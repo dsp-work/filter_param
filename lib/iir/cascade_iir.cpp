@@ -305,7 +305,7 @@ namespace filter
                             {
                                 fprintf(
                                     stderr,
-                                    "Error: [%s l.%d]Format of filter state is "
+                                    "Error: [%s l.%d]Format of filter spec is "
                                     "illegal.(input : \"%s\")\n"
                                     "If you assign filter type L.P.F. , length "
                                     "of edges is only 2.\n",
@@ -1151,7 +1151,12 @@ namespace filter
             const double x_step = ( right - left ) * dpi;
 
             // gnuplotで出力
-            FILE* gp = popen( "gnuplot -persist", "w" );
+            FILE* gp = NULL;
+#ifdef _MSC_VER
+            gp = _popen( "gnuplot -persist", "w" );
+#else
+            gp = popen( "gnuplot -persist", "w" );
+#endif
             fprintf( gp, "set terminal pngcairo size 1280, 960\n" );
             fprintf( gp, "set output '%s'\n", filename.c_str() );
             fprintf( gp, "set grid\n" );
@@ -1187,7 +1192,11 @@ namespace filter
 
             fprintf( gp, "e\n" );
 
+#ifdef _MSC_VER
+            _pclose( gp );
+#else
             pclose( gp );
+#endif
         }
 
         void FilterParam::gprint_mag(
@@ -1204,7 +1213,12 @@ namespace filter
             const double x_step = ( right - left ) * dpi;
 
             // gnuplotで出力
-            FILE* gp = popen( "gnuplot -persist", "w" );
+            FILE* gp = NULL;
+#ifdef _MSC_VER
+            gp = _popen( "gnuplot -persist", "w" );
+#else
+            gp = popen( "gnuplot -persist", "w" );
+#endif
             fprintf( gp, "set terminal pngcairo size 1280, 960\n" );
             fprintf( gp, "set output '%s'\n", filename.c_str() );
             fprintf( gp, "set grid\n" );
@@ -1240,7 +1254,11 @@ namespace filter
 
             fprintf( gp, "e\n" );
 
+#ifdef _MSC_VER
+            _pclose( gp );
+#else
             pclose( gp );
+#endif
         }
 
 

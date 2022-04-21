@@ -12,6 +12,10 @@
 #include <cstdio>
 #include <string>
 
+#ifdef _MSC_VER
+    #include <windows.h>
+#endif
+
 
 using namespace std;
 using namespace filter::iir;
@@ -207,6 +211,50 @@ void test_analyze_edges()
  */
 void test_FilterParam_read_csv()
 {
+#ifdef _MSC_VER
+    char Path[MAX_PATH + 1];
+
+    printf( "check full path\n" );
+    if ( 0 != GetModuleFileName( NULL, Path, MAX_PATH ) )
+    {    // 実行ファイルの完全パスを取得
+
+        char drive[MAX_PATH + 1], dir[MAX_PATH + 1], fname[MAX_PATH + 1], ext[MAX_PATH + 1];
+
+        //パス名を構成要素に分解します
+        _splitpath_s( Path, drive, sizeof( drive ), dir, sizeof( dir ), fname, sizeof( fname ), ext, sizeof( ext ) );
+
+    #ifdef DEBUG
+        printf( "完全パス : %s\n", Path );
+        printf( "ドライブ : %s\n", drive );
+        printf( "ディレクトリ パス : %s\n", dir );
+        printf( "ベース ファイル名 (拡張子なし) : %s\n", fname );
+        printf( "ファイル名の拡張子 : %s\n", ext );
+    #endif
+        string filename = format( "%s\\%s\\desire_filter.csv", drive, dir );
+        auto params = FilterParam::read_csv( filename );
+        for ( auto param : params )
+        {
+            printf(
+                "order(zero/pole) : %d/%d\n", param.zero_order(),
+                param.pole_order() );
+            printf( "optimization order : %d\n", param.opt_order() );
+            printf(
+                "nsplit(approx-transition) : %d-%d\n", param.partition_approx(),
+                param.partition_transition() );
+            printf( "group delay : %f\n\n", param.gd() );
+
+            for ( auto band : param.fbands() )
+            {
+                printf( "%s\n", band.sprint().c_str() );
+            }
+            printf( "---------------------------\n" );
+        }
+    }
+    else
+    {
+        exit( EXIT_FAILURE );
+    }
+#else
     string filename( "./desire_filter.csv" );
     auto params = FilterParam::read_csv( filename );
     for ( auto param : params )
@@ -226,6 +274,7 @@ void test_FilterParam_read_csv()
         }
         printf( "---------------------------\n" );
     }
+#endif
 }
 
 void run_FilterParam_new_single_band()
