@@ -20,6 +20,8 @@ void test_BandParam_new();
 void test_Band_generator();
 void test_analyze_edges();
 void test_FilterParam_read_csv();
+void run_FilterParam_new_single_band();
+void run_FilterParam_new_multi_band();
 void test_FilterParam_csw();
 void test_FilterParam_desire_res();
 void test_FilterParam_freq_res_speed();
@@ -58,6 +60,14 @@ int main( int argc, char** argv )
     else if ( args.at( 1 ) == string( "analyze_edges" ) )
     {
         test_analyze_edges();
+    }
+    else if ( args.at( 1 ) == string( "FilterParam_new_single_band" ) )
+    {
+        run_FilterParam_new_single_band();
+    }
+    else if ( args.at( 1 ) == string( "FilterParam_new_multi_band" ) )
+    {
+        run_FilterParam_new_multi_band();
     }
     else if ( args.at( 1 ) == string( "FilterParam_read_csv" ) )
     {
@@ -216,6 +226,18 @@ void test_FilterParam_read_csv()
         }
         printf( "---------------------------\n" );
     }
+}
+
+void run_FilterParam_new_single_band()
+{
+    auto band = BandParam( BandType::Pass, 0.0, 0.2 );
+    FilterParam fparam( 8, 2, band, 200, 50, 5.0 );
+}
+
+void run_FilterParam_new_multi_band()
+{
+    auto bands = FilterParam::gen_bands( FilterType::LPF, 0.2, 0.3 );
+    FilterParam fparam( 8, 2, bands, 200, 50, 5.0 );
 }
 
 /* フィルタ構造体
@@ -855,8 +877,8 @@ void test_FilterParam_pole_even()
     const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
     for ( unsigned int n = 0; n < 5; n++ )
     {
-        assert( std::round( pole_res.at( n ).real() * acc2 ) == std::round( test_pole.at( n ).real() * acc2 ) );
-        assert( std::round( pole_res.at( n ).imag() * acc2 ) == std::round( test_pole.at( n ).imag() * acc2 ) );
+        assert( static_cast< size_t >( std::round( pole_res.at( n ).real() * acc2 ) ) == static_cast< size_t >( std::round( test_pole.at( n ).real() * acc2 ) ) );
+        assert( static_cast< size_t >( std::round( pole_res.at( n ).imag() * acc2 ) ) == static_cast< size_t >( std::round( test_pole.at( n ).imag() * acc2 ) ) );
     }
 }
 
@@ -931,8 +953,8 @@ void test_FilterParam_pole_odd()
     const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
     for ( unsigned int n = 0; n < 5; n++ )
     {
-        assert( std::round( pole_res.at( n ).real() * acc2 ) == std::round( test_pole.at( n ).real() * acc2 ) );
-        assert( std::round( pole_res.at( n ).imag() * acc2 ) == std::round( test_pole.at( n ).imag() * acc2 ) );
+        assert( static_cast< size_t >( std::round( pole_res.at( n ).real() * acc2 ) ) == static_cast< size_t >( std::round( test_pole.at( n ).real() * acc2 ) ) );
+        assert( static_cast< size_t >( std::round( pole_res.at( n ).imag() * acc2 ) ) == static_cast< size_t >( std::round( test_pole.at( n ).imag() * acc2 ) ) );
     }
 }
 
@@ -1003,8 +1025,8 @@ void test_FilterParam_zero_even()
     const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
     for ( unsigned int m = 0; m < 5; m++ )
     {
-        assert( std::round( zero_res.at( m ).real() * acc2 ) == std::round( test_zero.at( m ).real() * acc2 ) );
-        assert( std::round( zero_res.at( m ).imag() * acc2 ) == std::round( test_zero.at( m ).imag() * acc2 ) );
+        assert( static_cast< size_t >( std::round( zero_res.at( m ).real() * acc2 ) ) == static_cast< size_t >( std::round( test_zero.at( m ).real() * acc2 ) ) );
+        assert( static_cast< size_t >( std::round( zero_res.at( m ).imag() * acc2 ) ) == static_cast< size_t >( std::round( test_zero.at( m ).imag() * acc2 ) ) );
     }
 }
 
@@ -1079,7 +1101,7 @@ void test_FilterParam_zero_odd()
     const unsigned int acc2 = 1000;    // 10^-n(小数点以下n桁)まで精度を検査
     for ( unsigned int m = 0; m < 5; m++ )
     {
-        assert( std::round( zero_res.at( m ).real() * acc2 ) == std::round( test_zero.at( m ).real() * acc2 ) );
-        assert( std::round( zero_res.at( m ).imag() * acc2 ) == std::round( test_zero.at( m ).imag() * acc2 ) );
+        assert( static_cast< size_t >( std::round( zero_res.at( m ).real() * acc2 ) ) == static_cast< size_t >( std::round( test_zero.at( m ).real() * acc2 ) ) );
+        assert( static_cast< size_t >( std::round( zero_res.at( m ).imag() * acc2 ) ) == static_cast< size_t >( std::round( test_zero.at( m ).imag() * acc2 ) ) );
     }
 }

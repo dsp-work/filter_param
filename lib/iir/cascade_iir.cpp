@@ -50,6 +50,7 @@ namespace filter
          *   ・基本波・第２次高調波の複素正弦波と所望周波数応答の帯域ごとの格納
          *   ・分母分子次数の偶奇の組み合わせによる使用する関数の分岐
          *   を行う
+         *   実処理は単一帯域をベクトルに変換して、もう一つのコンストラクタに移譲する
          *
          * # 引数
          * unsigned int zero : 零点の数
@@ -67,130 +68,8 @@ namespace filter
             unsigned int input_nsplit_approx,
             unsigned int input_nsplit_transition,
             double gd )
-            : n_order( zero ), m_order( pole ),
-              bands( std::vector< BandParam > { input_band } ),
-              nsplit_approx( input_nsplit_approx ),
-              nsplit_transition( input_nsplit_transition ), group_delay( gd ),
-              threshold_riple( 1.0 )
-        {
-            using std::vector;
-
-            // 帯域ごとの分割数算出
-            double approx_range = 0.0;
-            double transition_range = 0.0;
-
-            for ( auto bp : bands )
-            {
-                switch ( bp.type() )
-                {
-                    case BandType::Pass:
-                        {
-                            approx_range += bp.width();
-                            break;
-                        }
-                    case BandType::Stop:
-                        {
-                            approx_range += bp.width();
-                            break;
-                        }
-                    case BandType::Transition:
-                        {
-                            transition_range += bp.width();
-                            break;
-                        }
-                    default:
-                        {
-                            fprintf(
-                                stderr, "Error: [%s l.%d]Undefined band.\n",
-                                __FILE__, __LINE__ );
-                            exit( EXIT_FAILURE );
-                        }
-                }
-            }
-
-            vector< unsigned int > split;
-            split.reserve( bands.size() );
-            for ( auto bp : bands )
-            {
-                switch ( bp.type() )
-                {
-                    case BandType::Pass:
-                        {
-                            split.emplace_back( static_cast< unsigned int >(
-                                ( static_cast< double >( nsplit_approx )
-                                  * bp.width() / approx_range ) ) );
-                            break;
-                        }
-                    case BandType::Stop:
-                        {
-                            split.emplace_back( static_cast< unsigned int >(
-                                ( static_cast< double >( nsplit_approx )
-                                  * bp.width() / approx_range ) ) );
-                            break;
-                        }
-                    case BandType::Transition:
-                        {
-                            split.emplace_back( static_cast< unsigned int >(
-                                ( static_cast< double >( nsplit_transition )
-                                  * bp.width() / transition_range ) ) );
-                            break;
-                        }
-                    default:
-                        {
-                            fprintf(
-                                stderr, "Error: [%s l.%d]Undefined band.\n",
-                                __FILE__, __LINE__ );
-                            exit( EXIT_FAILURE );
-                        }
-                }
-            }
-            split.at( 0 ) += 1;
-
-            // generate complex sin wave(e^-jω)
-            // desire frequency response
-            csw.reserve( bands.size() );
-            csw2.reserve( bands.size() );
-            desire_res.reserve( bands.size() );
-            for ( unsigned int i = 0; i < bands.size(); ++i )
-            {
-                csw.emplace_back( gen_csw( bands.at( i ), split.at( i ) ) );
-                csw2.emplace_back( gen_csw2( bands.at( i ), split.at( i ) ) );
-                desire_res.emplace_back( gen_desire_res(
-                    bands.at( i ), split.at( i ), group_delay ) );
-            }
-
-            // decide using function
-            if ( ( n_order % 2 ) == 0 )
-            {
-                if ( ( m_order % 2 ) == 0 )
-                {
-                    freq_res_func = &FilterParam::freq_res_se;
-                    group_delay_func = &FilterParam::group_delay_se;
-                    stability_func = &FilterParam::judge_stability_even;
-                }
-                else
-                {
-                    freq_res_func = &FilterParam::freq_res_mo;
-                    group_delay_func = &FilterParam::group_delay_mo;
-                    stability_func = &FilterParam::judge_stability_odd;
-                }
-            }
-            else
-            {
-                if ( ( m_order % 2 ) == 0 )
-                {
-                    freq_res_func = &FilterParam::freq_res_no;
-                    group_delay_func = &FilterParam::group_delay_no;
-                    stability_func = &FilterParam::judge_stability_even;
-                }
-                else
-                {
-                    freq_res_func = &FilterParam::freq_res_so;
-                    group_delay_func = &FilterParam::group_delay_so;
-                    stability_func = &FilterParam::judge_stability_odd;
-                }
-            }
-        }
+            : FilterParam( zero, pole, std::vector< BandParam > { input_band }, input_nsplit_approx, input_nsplit_transition, gd )
+        {}
 
         FilterParam::FilterParam(
             unsigned int zero,
@@ -208,36 +87,39 @@ namespace filter
             const double acc = 1.0e-10;    // 1.0×10^-10≒0
 
             // 周波数帯域の整合性チェック
-            double band_left = 0.0;
-            for ( auto bp : bands )
+            if ( 2 <= this->bands.size() )
             {
-                if ( std::abs( bp.left() - band_left ) > acc )
+                double band_left = 0.0;
+                for ( auto bp : bands )
+                {
+                    if ( std::abs( bp.left() - band_left ) > acc )
+                    {
+                        fprintf(
+                            stderr,
+                            "Error: [%s l.%d]Adjacent band edge is necessary "
+                            "same.\n"
+                            "Or first band of left side must be 0.0.\n",
+                            __FILE__, __LINE__ );
+                        for ( auto bp_ : bands )
+                        {
+                            fprintf( stderr, "%s\n", bp_.sprint().c_str() );
+                        }
+                        exit( EXIT_FAILURE );
+                    }
+                    band_left = bp.right();
+                }
+                if ( std::abs( bands.back().right() - 0.5 ) > acc )
                 {
                     fprintf(
                         stderr,
-                        "Error: [%s l.%d]Adjacent band edge is necessary "
-                        "same.\n"
-                        "Or first band of left side must be 0.0.\n",
+                        "Error: [%s l.%d]Last band of right side must be 0.5.\n",
                         __FILE__, __LINE__ );
-                    for ( auto bp_ : bands )
+                    for ( auto bp : bands )
                     {
-                        fprintf( stderr, "%s\n", bp_.sprint().c_str() );
+                        fprintf( stderr, "%s\n", bp.sprint().c_str() );
                     }
                     exit( EXIT_FAILURE );
                 }
-                band_left = bp.right();
-            }
-            if ( std::abs( bands.back().right() - 0.5 ) > acc )
-            {
-                fprintf(
-                    stderr,
-                    "Error: [%s l.%d]Last band of right side must be 0.5.\n",
-                    __FILE__, __LINE__ );
-                for ( auto bp : bands )
-                {
-                    fprintf( stderr, "%s\n", bp.sprint().c_str() );
-                }
-                exit( EXIT_FAILURE );
             }
 
             // 帯域ごとの分割数算出
@@ -329,30 +211,38 @@ namespace filter
             {
                 if ( ( m_order % 2 ) == 0 )
                 {
-                    freq_res_func = &FilterParam::freq_res_se;
-                    group_delay_func = &FilterParam::group_delay_se;
-                    stability_func = &FilterParam::judge_stability_even;
+                    this->freq_res_func = &FilterParam::freq_res_se;
+                    this->group_delay_func = &FilterParam::group_delay_se;
+                    this->stability_func = &FilterParam::judge_stability_even;
+                    this->pole_func = &FilterParam::pole_even;
+                    this->zero_func = &FilterParam::zero_even;
                 }
                 else
                 {
-                    freq_res_func = &FilterParam::freq_res_mo;
-                    group_delay_func = &FilterParam::group_delay_mo;
-                    stability_func = &FilterParam::judge_stability_odd;
+                    this->freq_res_func = &FilterParam::freq_res_mo;
+                    this->group_delay_func = &FilterParam::group_delay_mo;
+                    this->stability_func = &FilterParam::judge_stability_odd;
+                    this->pole_func = &FilterParam::pole_even;
+                    this->zero_func = &FilterParam::zero_odd;
                 }
             }
             else
             {
                 if ( ( m_order % 2 ) == 0 )
                 {
-                    freq_res_func = &FilterParam::freq_res_no;
-                    group_delay_func = &FilterParam::group_delay_no;
-                    stability_func = &FilterParam::judge_stability_even;
+                    this->freq_res_func = &FilterParam::freq_res_no;
+                    this->group_delay_func = &FilterParam::group_delay_no;
+                    this->stability_func = &FilterParam::judge_stability_even;
+                    this->pole_func = &FilterParam::pole_odd;
+                    this->zero_func = &FilterParam::zero_even;
                 }
                 else
                 {
-                    freq_res_func = &FilterParam::freq_res_so;
-                    group_delay_func = &FilterParam::group_delay_so;
-                    stability_func = &FilterParam::judge_stability_odd;
+                    this->freq_res_func = &FilterParam::freq_res_so;
+                    this->group_delay_func = &FilterParam::group_delay_so;
+                    this->stability_func = &FilterParam::judge_stability_odd;
+                    this->pole_func = &FilterParam::pole_odd;
+                    this->zero_func = &FilterParam::zero_odd;
                 }
             }
         }
