@@ -1157,6 +1157,15 @@ namespace filter
 #else
             gp = popen( "gnuplot -persist", "w" );
 #endif
+            // error handling
+            if ( gp == NULL )
+            {
+                fprintf(
+                    stderr,
+                    "Error: Can't open pipe.(gnuplot)\n" );
+                exit( EXIT_FAILURE );
+            }
+
             fprintf( gp, "set terminal pngcairo size 1280, 960\n" );
             fprintf( gp, "set output '%s'\n", filename.c_str() );
             fprintf( gp, "set grid\n" );
@@ -1219,6 +1228,15 @@ namespace filter
 #else
             gp = popen( "gnuplot -persist", "w" );
 #endif
+            // error handling
+            if ( gp == NULL )
+            {
+                fprintf(
+                    stderr,
+                    "Error: Can't open pipe.(gnuplot)\n" );
+                exit( EXIT_FAILURE );
+            }
+
             fprintf( gp, "set terminal pngcairo size 1280, 960\n" );
             fprintf( gp, "set output '%s'\n", filename.c_str() );
             fprintf( gp, "set grid\n" );
