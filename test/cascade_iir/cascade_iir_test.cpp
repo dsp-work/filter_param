@@ -11,11 +11,21 @@
 #include <chrono>
 #include <cstdio>
 #include <string>
+#include <iostream>
+#include <cstdlib>
+#include <exception>
+#include <DspWorkUtils/stack_backtrace>
 
 #ifdef _MSC_VER
     #include <windows.h>
 #endif
 
+void my_terminate_handler() {
+    try {
+        std::cerr << boost::stacktrace::stacktrace();
+    } catch (...) {}
+    std::abort();
+}
 
 using namespace std;
 using namespace filter::iir;
@@ -51,6 +61,7 @@ void test_FilterParam_zero_odd();
 
 int main( int argc, char** argv )
 {
+    std::set_terminate(&my_terminate_handler);
     vector< string > args( argv, argv + argc );
 
     if ( args.at( 1 ) == string( "BandParam_new" ) )

@@ -9,6 +9,8 @@ include(./.cmake/cxx_config.cmake)
 #----------------- clang-format config -------------------------
 include(./.cmake/clang-format.cmake)
 
+# ---------- dependencies ----------
+include(./.cmake/dependency_dsp_work_utils.cmake)
 
 #------------------ build source config ------------------
 
@@ -20,6 +22,9 @@ add_subdirectory(lib)
 
 # libraries
 add_library(digital_filters INTERFACE)
+    # depends libraries
+    target_link_libraries(${PROJECT_NAME} INTERFACE dsp_work_utils::utils)
+    # internal libraries
     target_link_libraries(digital_filters INTERFACE cascade_iir)
 
 # for development executable(optional activate)
