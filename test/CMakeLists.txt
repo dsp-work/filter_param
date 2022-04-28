@@ -1,3 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
+add_subdirectory(available_with_utils)
+
 add_subdirectory(cascade_iir)
