@@ -36,8 +36,8 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
       - name: dependency install
         run: |
-#          vcpkg install eigen3:x64-windows
           winget install -e --id gnuplot.gnuplot
+#          vcpkg install eigen3:x64-windows
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       - name: Build
