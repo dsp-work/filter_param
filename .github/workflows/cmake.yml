@@ -38,7 +38,7 @@ jobs:
         run: |
           choco install gnuplot
           cmd.exe /c refreshenv
-          echo %path%
+          cmd.exe /c echo %path%
 #          vcpkg install gnuplot:x64-windows
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
